@@ -13,10 +13,10 @@
 
 // Motor Pins
 #define DRV8835_PHASE_ENABLE_PIN	00
-#define MOTOR_LEFT_DIRECTION_PIN	02
-#define MOTOR_LEFT_PWM_PIN			04
-#define MOTOR_RIGHT_DIRECTION_PIN	01
-#define MOTOR_RIGHT_PWM_PIN			03
+#define MOTOR_LEFT_DIRECTION_PIN	01
+#define MOTOR_LEFT_PWM_PIN			03
+#define MOTOR_RIGHT_DIRECTION_PIN	02
+#define MOTOR_RIGHT_PWM_PIN			04
 
 // Encoder Pins
 #define ENCODER_LEFT_GREEN_PIN		16
@@ -85,15 +85,15 @@ void assignRight(int speed, int direction)
 void setmotors(int left_speed, int right_speed)
 {
 	// Array for forwards/backwards directions (1 = backwards)
-	bool isneg[2] = {left_speed > 0, right_speed < 0};
+	bool isneg[2] = {left_speed < 0, right_speed < 0};
 
 	// Limit motor speeds to range (0 to 255)
 	left_speed = limit(abs(left_speed), 0, 255);
 	right_speed = limit(abs(right_speed), 0, 255);
 
 	// Assign motor values
-	assignLeft(right_speed, isneg[1]);
-	assignRight(left_speed, isneg[0]);
+	assignLeft(left_speed, isneg[0]);
+	assignRight(right_speed, isneg[1]);
 }
 
 int rampMotor(int current_vel, int target_vel)
@@ -112,8 +112,8 @@ void setup()
 	// Set output pins
 	pinMode(MOTOR_LEFT_DIRECTION_PIN,	OUTPUT);  // APHASE  --> Left Motor Direction (0 or 1)
 	pinMode(MOTOR_LEFT_PWM_PIN,			OUTPUT);  // AENBL   --> Left Motor Speed (0-255)
-	pinMode(MOTOR_LEFT_DIRECTION_PIN,	OUTPUT);  // BPHASE  --> Right Motor Direction (0 or 1)
-	pinMode(MOTOR_LEFT_PWM_PIN,			OUTPUT);  // BENBL   --> Right Motor Speed (0-255)
+	pinMode(MOTOR_RIGHT_DIRECTION_PIN,	OUTPUT);  // BPHASE  --> Right Motor Direction (0 or 1)
+	pinMode(MOTOR_RIGHT_PWM_PIN,			OUTPUT);  // BENBL   --> Right Motor Speed (0-255)
 	pinMode(DRV8835_PHASE_ENABLE_PIN,	OUTPUT);  // MODE    --> HIGH for PHASE/ENABLE
 	digitalWrite(DRV8835_PHASE_ENABLE_PIN, HIGH); // MODE    --> Setting MODE pin to HIGH
 
