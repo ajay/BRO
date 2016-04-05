@@ -38,8 +38,6 @@ class BruhBot
 
 		/**
 		 * Resets values of encoders back to zero, on the arduino side
-		 * This is done by sending a reset string over serial:
-		 * "[reset]\n"
 		 */
 		void reset_encoders(void);
 
@@ -62,7 +60,7 @@ class BruhBot
 		 * actually send the serial string
 		 * @param motion
 		 *        Motion string to send over serial. Current format:
-		 *        "[leftFront, rightFront, leftBack, rightBack]\n"
+		 *        "[left_motor, right_motor, reset_enc]\n"
 		 */
 		void send(const arma::vec &motion);
 

@@ -108,11 +108,11 @@ int main(int argc, char *argv[])
 
 		if (event.type == SDL_KEYDOWN)
 		{
-			if (keystates[SDL_SCANCODE_A] && (v < 0.9))
+			if (keystates[SDL_SCANCODE_A] && (v < 1))
 			{
 				v += 0.05;
 			}
-			else if(keystates[SDL_SCANCODE_S] && (v > -0.9))
+			else if(keystates[SDL_SCANCODE_S] && (v > -1))
 			{
 				v -= 0.05;
 			}

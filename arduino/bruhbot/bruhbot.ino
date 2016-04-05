@@ -8,7 +8,7 @@
 
 #define DEV_ID 1
 #define RAMP_CONST 1 // Higher is faster
-#define SPEED_LIMIT 128
+#define SPEED_LIMIT 255
 #define BUFSIZE 256
 
 // Motor Pins
