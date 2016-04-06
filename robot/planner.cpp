@@ -7,6 +7,7 @@
 #include <unistd.h>
 
 #include "BruhBot.h"
+#include "slam.h"
 #include "window.h"
 
 using namespace arma;
@@ -79,6 +80,8 @@ int main(int argc, char *argv[])
 	double v = 0.5; // velocity
 	string direction = "STOP";
 
+	slamSetup();
+
 	while(!quit)
 	{
 		std::ostringstream speed, direction_string, motor_speeds, encoders, us[4];
@@ -130,9 +133,13 @@ int main(int argc, char *argv[])
 		else if (keystates[SDL_SCANCODE_1]) 											{ direction = "MOTOR_LEFT"; }
 		else if (keystates[SDL_SCANCODE_2]) 											{ direction = "MOTOR_RIGHT"; }
 
+		else if (keystates[SDL_SCANCODE_U])												{ updateSlam(&bruh); }
+
 		else																			{ direction = "STOP"; }
 
 		drive(direction, v);
+
+		// updateSlam(&bruh);
 
 		if(keystates[SDL_SCANCODE_Q])
 		{

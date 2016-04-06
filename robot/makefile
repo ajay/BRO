@@ -26,7 +26,7 @@ LIBS 		= `pkg-config --libs sdl2` \
 COMPILEC 	= $(CC) $(CFLAGS)
 COMPILECPP 	= $(CPPC) $(CPPFLAGS)
 
-OBJECTS 	= serial.o window.o BruhBot.o test.o
+OBJECTS 	= serial.o window.o BruhBot.o planner.o slam.o
 
 all: $(OBJECTS) bruh
 
