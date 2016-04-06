@@ -9,7 +9,7 @@ SDL_Surface* initSDL()
 	int width = 640;
 	int height = 480;
 
-	window = SDL_CreateWindow("Rose", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN);
+	window = SDL_CreateWindow("BRUHHHHHH", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN);
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 	screen = SDL_CreateRGBSurface(0, width, height, 32, 0, 0, 0, 0);
 	texture = SDL_CreateTextureFromSurface(renderer, screen);
