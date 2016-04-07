@@ -15,7 +15,7 @@ Maze::~Maze()
 {
 }
 
-int getX(int last)
+int Maze::getX(int last)
 {
 	while (last >= SIZE)
 	{
@@ -24,7 +24,7 @@ int getX(int last)
 	return last;
 }
 
-int getY(int last)
+int Maze::getY(int last)
 {
 	int i = 0;
 	while (last >= SIZE)
@@ -35,7 +35,7 @@ int getY(int last)
 	return i;
 }
 
-int _i(int x, int y)
+int Maze::_i(int x, int y)
 {
 	return 16*y + x;
 }
@@ -420,8 +420,6 @@ void Maze::createPreviousBrownMaze()
 	}
 }
 
-
-
 // Create a random maze
 void Maze::createMaze()
 {
@@ -672,7 +670,6 @@ void Maze::DFS()
 	// cout <<"Shortest Path"<<endl;
 	int last = goal;
 
-	std::vector<int> path;
 	path.push_back(goal);
 
 	while(last != 0)
@@ -731,8 +728,6 @@ void Maze::DFS()
 
 	path_dir.push_back(5);
 
-	std::vector<string> path_instructions;
-
 	path_instructions.push_back("STRAIGHT");
 
 	for (unsigned int i = 1; i < path_dir.size(); i++)
@@ -743,11 +738,11 @@ void Maze::DFS()
 		}
 		else if ((path_dir[i] - path_dir[i-1] == 1) or (path_dir[i] - path_dir[i-1] == -3))
 		{
-			path_instructions.push_back("-90");
+			path_instructions.push_back("TURN_-90");
 		}
 		else if ((path_dir[i] - path_dir[i-1] == -1) or (path_dir[i] - path_dir[i-1] == 3))
 		{
-			path_instructions.push_back("+90");
+			path_instructions.push_back("TURN_+90");
 		}
 		else
 		{

@@ -20,6 +20,13 @@ class Maze
 		void createPreviousBrownMaze();
 		void DFS();
 
+		std::vector<string> path_instructions;
+		std::vector<int> path;
+
+		int getX(int last);
+		int getY(int last);
+		int _i(int x, int y);
+
 	protected:
 		int size;
 		cell maze[SIZE*SIZE];

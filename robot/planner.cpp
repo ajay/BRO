@@ -19,6 +19,56 @@ Maze* maze = new Maze();
 static vector<double> motion = {0, 0};
 static int stopsig;
 
+void auton()
+{
+	while (1)
+	{
+		while (bruh.mode != "AUTO")
+		{
+			usleep(100000); // 100ms
+		}
+
+		for (unsigned int i = 0; i < maze->path.size(); i++)
+		{
+			if (bruh.mode != "AUTO")
+			{
+				break;
+			}
+
+			usleep(500000); // 0.5 s
+			bruh.pid_type = "STOP";
+			printf("---State %d of %d---\n", i, (int)maze->path.size()-1);
+			printf("Target: (%2d, %2d)\n", maze->getX(maze->path[maze->path.size()-1]), maze->getY(maze->path[maze->path.size()-1]));
+			printf("Current location: (%2d, %2d)\n", maze->getX(maze->path[i]), maze->getY(maze->path[i]));
+			printf("Current action: %s\n", maze->path_instructions[i].c_str());
+
+			if (maze->path_instructions[i] == "GOAL")
+			{
+				bruh.mode = "STOP";
+				break;
+			}
+			else
+			{
+				bruh.pid_type = maze->path_instructions[i];
+
+				if ((maze->path_instructions[i] == "TURN_-90") or (maze->path_instructions[i] == "TURN_+90"))
+				{
+					usleep(500000); // 500ms
+					bruh.reset_encoders();
+					usleep(500000); // 500ms
+					bruh.pid_type = "STRAIGHT";
+				}
+			}
+
+			while (bruh.pid_type != "ADVANCE")
+			{
+				usleep(10000); // 10ms
+			}
+
+		}
+	}
+}
+
 // Takes in two integers and assignments them to motion
 void drive(double left_speed, double right_speed)
 {
@@ -73,6 +123,7 @@ int main(int argc, char *argv[])
 	bool quit = false;
 
 	thread pid(pid_straight, &bruh);
+	thread autonmous(auton);
 
 	SDL_Surface *screen = initSDL();
 	SDL_Event event;
@@ -128,7 +179,8 @@ int main(int argc, char *argv[])
 		}
 
 		if 		(keystates[SDL_SCANCODE_R]) 												{ bruh.reset_encoders(); }
-		else if (keystates[SDL_SCANCODE_I])													{ bruh.mode = "DRIVE"; }
+		else if (keystates[SDL_SCANCODE_U])													{ bruh.mode = "DRIVE"; }
+		else if (keystates[SDL_SCANCODE_I])													{ bruh.mode = "AUTO"; }
 		else if (keystates[SDL_SCANCODE_O])													{ bruh.mode = "PID"; }
 		else if (keystates[SDL_SCANCODE_P])													{ bruh.mode = "STOP"; }
 
@@ -153,14 +205,18 @@ int main(int argc, char *argv[])
 
 		else if (bruh.mode == "PID")
 		{
-			bruh.pid_type = "STRAIGHT";
 			bruh.pid_info = 1000;
+
+			if 		(keystates[SDL_SCANCODE_UP])											{ bruh.pid_type = "STRAIGHT"; }
+			else if (keystates[SDL_SCANCODE_LEFT])											{ bruh.pid_type = "TURN_+90"; }
+			else if (keystates[SDL_SCANCODE_RIGHT]) 										{ bruh.pid_type = "TURN_-90"; }
 		}
 
 		else if (bruh.mode == "STOP")
 		{
+			bruh.pid_type = "STOP";
 			direction = "STOP";
-			bruh.reset_encoders();
+			// bruh.reset_encoders();
 			bruh.send(vector<double>({0, 0}));
 		}
 

@@ -98,7 +98,7 @@ class BruhBot
 		double ultrasonic[4] = {-1};
 
 		std::string mode = "STOP";
-		std::string pid_type = "STRAIGHT";
+		std::string pid_type = "STOP";
 		int pid_info = 0;
 
 	private:
