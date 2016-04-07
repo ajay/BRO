@@ -3,7 +3,7 @@
 
 #include "BruhBot.h"
 
-void pid_straight(int ticks);
+void pid_straight(BruhBot *bruh);
 
 void advance_tile();
 

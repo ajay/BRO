@@ -8,6 +8,7 @@
 
 #include "BruhBot.h"
 // #include "slam.h"
+#include "pid.h"
 #include "window.h"
 
 using namespace std;
@@ -15,8 +16,6 @@ using namespace std;
 static BruhBot bruh;
 static vector<double> motion = {0, 0};
 static int stopsig;
-static bool pid_kill = true;
-static string mode = "STOP";
 
 // Takes in two integers and assignments them to motion
 void drive(double left_speed, double right_speed)
@@ -71,6 +70,8 @@ int main(int argc, char *argv[])
 	signal(SIGINT, stop);
 	bool quit = false;
 
+	thread pid(pid_straight, &bruh);
+
 	SDL_Surface *screen = initSDL();
 	SDL_Event event;
 	SDL_Window* window = get_window();
@@ -80,13 +81,11 @@ int main(int argc, char *argv[])
 	double v = 0.5; // velocity
 	string direction = "STOP";
 
-	// slamSetup();
-
 	while(!quit)
 	{
 		std::ostringstream speed, mode_string, direction_string, motor_speeds, encoders, us[4];
 		speed << "Speed: " << std::setprecision(2) << v;
-		mode_string << "Mode: " << mode;
+		mode_string << "Mode: " << bruh.mode;
 		direction_string << "Direction: " << direction;
 		motor_speeds << "Motor Speeds: [" << bruh.motor_speeds[0] << " " << bruh.motor_speeds[1] << "]";
 		encoders << "Encoders: [" << bruh.encoder[0] << " " << bruh.encoder[1] << "]";
@@ -124,14 +123,12 @@ int main(int argc, char *argv[])
 		}
 
 		if 		(keystates[SDL_SCANCODE_R]) 												{ bruh.reset_encoders(); }
-		else if (keystates[SDL_SCANCODE_I])													{ mode = "DRIVE"; }
-		else if (keystates[SDL_SCANCODE_O])													{ mode = "PID"; }
-		else if (keystates[SDL_SCANCODE_P])													{ mode = "STOP"; }
+		else if (keystates[SDL_SCANCODE_I])													{ bruh.mode = "DRIVE"; }
+		else if (keystates[SDL_SCANCODE_O])													{ bruh.mode = "PID"; }
+		else if (keystates[SDL_SCANCODE_P])													{ bruh.mode = "STOP"; }
 
-		if (mode == "DRIVE")
+		if (bruh.mode == "DRIVE")
 		{
-			pid_kill = true;
-
 			if 		((keystates[SDL_SCANCODE_UP]) and (keystates[SDL_SCANCODE_LEFT]))		{ direction = "FORWARD_LEFT"; }
 			else if ((keystates[SDL_SCANCODE_UP]) and (keystates[SDL_SCANCODE_RIGHT]))		{ direction = "FORWARD_RIGHT"; }
 			else if ((keystates[SDL_SCANCODE_DOWN]) and (keystates[SDL_SCANCODE_LEFT]))		{ direction = "BACKWARD_LEFT"; }
@@ -149,14 +146,14 @@ int main(int argc, char *argv[])
 			bruh.send(motion);
 		}
 
-		else if (mode == "PID")
+		else if (bruh.mode == "PID")
 		{
-			pid_kill = false;
+			bruh.pid_type = "STRAIGHT";
+			bruh.pid_info = 1000;
 		}
 
-		else if (mode == "STOP")
+		else if (bruh.mode == "STOP")
 		{
-			pid_kill = true;
 			direction = "STOP";
 			bruh.send(vector<double>({0, 0}));
 		}

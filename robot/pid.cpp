@@ -1,60 +1,61 @@
+#include <unistd.h>
+
 #include "pid.h"
 
-double k_p = 0.005;
-double k_i = 0.001;
-double k_d = 0.001;
+double k_p = 0.0005;
+double k_i = 0.000;
+double k_d = 0.000;
 
-void pid_straight(int ticks);
+void pid_straight(BruhBot *bruh)
 {
 	while (1)
 	{
-		while (pid_kill)
+		while (bruh->mode != "PID")
 		{
-			sleep(0.1);
-		}
-
-		double speed = 0.9;
-		rose.reset_encoders();
-		int average = 0;
-
-		arma::vec error = zeros<vec>(2);
-		arma::vec error_sum = zeros<vec>(2);
-		arma::vec prev_error = zeros<vec>(2);
-		arma::vec error_diff = zeros<vec>(2);
-
-		while (!pid_kill)
-		{
-			// Average is now the master
-			int error = bruh.
-
-			if (average >= 360)
-			{
-				pid_kill = true;
-			}
-
-			for (unsigned int i = 0; i < 4; i++)
-			{
-				error[i] = average - rose.encoder[i];
-				error_sum[i] += error[i];
-				error_diff[i] = error[i] - prev_error[i];
-				prev_error[i] = error[i];
-			}
-
-			// Slaves
-			motion[0] = speed + (error[1] * k_p) + (error_sum[1] * k_i) + (error_diff[1] * k_d);
-			motion[1] = speed + (error[1] * k_p) + (error_sum[1] * k_i) + (error_diff[1] * k_d);
-			motion[2] = speed + (error[2] * k_p) + (error_sum[2] * k_i) + (error_diff[2] * k_d);
-			motion[3] = speed + (error[3] * k_p) + (error_sum[3] * k_i) + (error_diff[3] * k_d);
-
-			printf("average: [%d]\n", average);
-			printf("rose_encoder: [%d %d %d %d]\n", (int)rose.encoder[0], (int)rose.encoder[1], (int)rose.encoder[2], (int)rose.encoder[3]);
-			printf("error: [%d %d %d %d]\n", (int)error[0], (int)error[1], (int)error[2], (int)error[3]);
-			printf("error_sum: [%d %d %d %d]\n", (int)error_sum[0], (int)error_sum[1], (int)error_sum[2], (int)error_sum[3]);
-			printf("error_diff: [%d %d %d %d]\n", (int)error_diff[0], (int)error_diff[1], (int)error_diff[2], (int)error_diff[3]);
-			printf("motion: [%2.5f %2.5f %2.5f %2.5f]\n\n", motion[0], motion[1], motion[2], motion[3]);
-
-			rose.send(motion);
 			usleep(100000); // 100ms
 		}
+
+		double base_vel = 0.25;
+		bruh->reset_encoders();
+
+		int error = 0;
+		int error_sum = 0;
+		int prev_error = 0;
+		int error_diff = 0;
+		int average = 0;
+		std::vector<double> motion = {0, 0};
+
+		while ((bruh->mode == "PID") and (average < bruh->pid_info))
+		{
+			average = (int)((bruh->encoder[0] + bruh->encoder[1]) / 2);
+			// conventinal pid error: left - right
+			int error = bruh->encoder[0] - bruh->encoder[1];
+			error_sum += error;
+			error_diff = error - prev_error;
+			prev_error = error;
+
+			motion[0] = base_vel - k_p * error
+								 - k_i * error_sum
+								 - k_d * error_diff;
+
+			motion[1] = base_vel + k_p * error
+								 + k_i * error_sum
+								 + k_d * error_diff;
+
+			printf("error: %d\n", error);
+			printf("error_sum: %d\n", error_sum);
+			printf("error_diff: %d\n", error_diff);
+			printf("motion: [%2.5f %2.5f]\n\n", motion[0], motion[1]);
+
+			bruh->send(motion);
+
+			usleep(100000); // 100ms
+		}
+
+		bruh->mode = "STOP";
 	}
+}
+
+void turn(int degrees)
+{
 }

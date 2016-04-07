@@ -3,6 +3,7 @@
 
 #include <pthread.h>
 #include <vector>
+#include <string>
 
 #include "serial.h"
 
@@ -95,6 +96,10 @@ class BruhBot
 		 * send from the arduino
 		 */
 		double ultrasonic[4] = {-1};
+
+		std::string mode = "STOP";
+		std::string pid_type = NULL;
+		int pid_info = 0;
 
 	private:
 		/**
