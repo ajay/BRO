@@ -19,7 +19,6 @@ CPPFLAGS 	= `pkg-config --cflags sdl2` \
 				-o
 
 LIBS 		= `pkg-config --libs sdl2` \
- 				-larmadillo \
  				-pthread \
  				-lSDL2_ttf
 

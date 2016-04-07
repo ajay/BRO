@@ -1,7 +1,9 @@
 #ifndef BRUHBOT_H
 #define BRUHBOT_H
 
-#include <armadillo>
+#include <pthread.h>
+#include <vector>
+
 #include "serial.h"
 
 class BruhBot
@@ -62,7 +64,7 @@ class BruhBot
 		 *        Motion string to send over serial. Current format:
 		 *        "[left_motor, right_motor, reset_enc]\n"
 		 */
-		void send(const arma::vec &motion);
+		void send(std::vector<double> motion);
 
 		/**
 		 * Used to hold the state of if the encoders
@@ -115,7 +117,7 @@ class BruhBot
 		 * @param motion
 		 *        The vector to be sent over to the arduinos
 		 */
-		void threadSend(const arma::vec &motion);
+		void threadSend(std::vector<double> motion);
 
 		/**
 		 * Manages receiving data over serial. Manages mutex locks
@@ -124,20 +126,20 @@ class BruhBot
 		 * threadRecv(), which will actually place the data somewhere instead.
 		 * @return  A vector of data received
 		 */
-		arma::vec recv(void);
+		void recv(void);
 
 		/**
 		 * Hold the last value that was assigned to the motors over serial.
 		 * Used to make sure the same values are not sent over twice.
 		 */
-		arma::vec prev_motion;
+		std::vector<double> prev_motion;
 
 		/**
 		 * Vector holding values of 255. Used to convert double from
 		 * -1 to 1 to a pwm value from -255 to 255. Can be used to limit
 		 * overall motion range between any two values.
 		 */
-		arma::vec motion_const;
+		std::vector<double> motion_const;
 
 		/**
 		 * Stores current robotid, useful in the future if multiple
@@ -162,8 +164,8 @@ class BruhBot
 		std::vector<char *> pports;
 
 		// Threading stuff for handling the communcation
-		arma::vec commSend;
-		arma::vec commRecv;
+		std::vector<double> commSend;
+		std::vector<double> commRecv;
 		pthread_t *update_thread;
 		pthread_mutex_t *commSendLock;
 		pthread_mutex_t *commRecvLock;

@@ -1,15 +1,17 @@
+#include <cstring>
 #include <dirent.h>
 #include <pthread.h>
 #include <termios.h>
 #include <string>
-#include <cstring>
+
 #include "BruhBot.h"
 
 #define WBUFSIZE 128
 #define DEV_BAUD  B57600
 #define SYNC_NSEC 100000000
 
-using namespace arma;
+// using namespace arma;
+using namespace std;
 
 // Limit the value of x between min and max (min < x < max)
 static double limitf(double x, double min, double max)
@@ -21,12 +23,12 @@ static double limitf(double x, double min, double max)
 
 BruhBot::BruhBot(void)
 {
-	this->prev_motion = zeros<vec>(2);
-	this->motion_const = ones<vec>(2) * 255.0;
+	this->prev_motion = vector<double>(2, 0);
+	this->motion_const = vector<double>(2, 255);
 	if (this->connect())
 	{
 		this->reset();
-		this->send(zeros<vec>(2));
+		this->send(vector<double>(2, 0));
 	}
 	else
 	{
@@ -48,7 +50,7 @@ BruhBot::~BruhBot(void)
 {
 	if (this->connected())
 	{
-		this->send(zeros<vec>(2));
+		this->send(vector<double>(2, 0));
 		this->reset();
 		this->disconnect();
 	}
@@ -66,7 +68,7 @@ bool BruhBot::connected(void)
 
 void BruhBot::reset(void)
 {
-	this->prev_motion.zeros();
+	this->prev_motion = vector<double>(2, 0);
 }
 
 void BruhBot::reset_encoders(void)
@@ -80,7 +82,7 @@ void* BruhBot::commHandler(void* args)
 
 	while (!(bruh->startStop))
 	{
-		vec tempSendVec;
+		vector<double> tempSendVec;
 		pthread_mutex_lock(bruh->commSendLock);
 		tempSendVec = bruh->commSend;
 		pthread_mutex_unlock(bruh->commSendLock);
@@ -187,14 +189,14 @@ bool BruhBot::connect(void)
 	// Disconnect if number of devices is not enough, or there are too many
 	if (!this->connected())
 	{
-		printf("Stuck checking for connected()\n");
+		printf("[BruhBot] Stuck checking for connected()\n");
 		this->disconnect();
 		return false;
 	}
 
 	else if (this->numconnected() == 0)
 	{
-		printf("Could not connect to all arduinos\n");
+		printf("[BruhBot] Could not connect to all arduinos\n");
 		return false;
 	}
 
@@ -244,7 +246,7 @@ void BruhBot::disconnect(void)
 	this->robotid = 0;
 }
 
-void BruhBot::send(const vec &motion)
+void BruhBot::send(std::vector<double> motion)
 {
 	// Lock the data before setting it...avoids the thread from reading the motion vector before it finishes copying over
 	if (this->numconnected() > 0)
@@ -255,24 +257,22 @@ void BruhBot::send(const vec &motion)
 	}
 }
 
-void BruhBot::threadSend(const vec &motion)
+void BruhBot::threadSend(std::vector<double> motion)
 {
-	vec new_motion = motion;
+	vector<double> new_motion = motion;
 
 	// Safety check
-	if (new_motion.n_elem != motion_const.n_elem)
+	if (new_motion.size() != motion_const.size())
 	{
-		new_motion = zeros<vec>(motion_const.n_elem);
+		new_motion = vector<double>(motion_const.size(), 0);
 	}
 
 	// Boundary check
-	for (int i = 0; i < (int)new_motion.n_elem; i++)
+	for (int i = 0; i < (int)new_motion.size(); i++)
 	{
-		new_motion(i) = limitf(new_motion(i), -1.0, 1.0);
+		new_motion[i] = limitf(new_motion[i], -1.0, 1.0);
+		new_motion[i] *= motion_const[i];
 	}
-
-	// Parse the new motion originally from (-1 to 1) to (-255 to 255)
-	new_motion %= motion_const;
 
 	char msg[WBUFSIZE];
 	for (int i = 0; i < (int)this->connections.size(); i++)
@@ -282,11 +282,11 @@ void BruhBot::threadSend(const vec &motion)
 			// Arduino #1: BruhBot
 			case 1:
 
-				this->prev_motion(0) = new_motion(0);
-				this->prev_motion(1) = new_motion(1);
+				this->prev_motion[0] = new_motion[0];
+				this->prev_motion[1] = new_motion[1];
 					sprintf(msg, "[%d %d %d]\n",
-						(int)new_motion(0),
-						(int)new_motion(1),
+						(int)new_motion[0],
+						(int)new_motion[1],
 						(int)this->reset_enc);
 
 				serial_write(this->connections[i], msg);
@@ -304,14 +304,14 @@ void BruhBot::threadSend(const vec &motion)
 	}
 }
 
-vec BruhBot::recv(void)
+void BruhBot::recv(void)
 {
 	// Add a lock to wait until the commthread is done setting the vector
-	vec tempVec;
+	vector<double> tempVec;
 	pthread_mutex_lock(this->commRecvLock);
 	tempVec = this->commRecv;
 	pthread_mutex_unlock(this->commRecvLock);
-	return tempVec;
+	// return tempVec;
 }
 
 void BruhBot::threadRecv(void)

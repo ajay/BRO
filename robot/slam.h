@@ -2,6 +2,8 @@
 #define SLAM_H
 
 #include "BruhBot.h"
+#include <cmath>
+#include <stdio.h>
 
 void slamSetup();
 

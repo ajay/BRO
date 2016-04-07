@@ -4,16 +4,16 @@
 #include <string>
 #include <thread>
 #include <unistd.h>
+#include <sstream>
 
 #include "BruhBot.h"
 // #include "slam.h"
 #include "window.h"
 
-using namespace arma;
 using namespace std;
 
 static BruhBot bruh;
-static vec motion = zeros<vec>(2);
+static vector<double> motion = {0, 0};
 static int stopsig;
 static bool pid_kill = true;
 static string mode = "STOP";
@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
 		{
 			pid_kill = true;
 			direction = "STOP";
-			bruh.send(zeros<vec>(2));
+			bruh.send(vector<double>({0, 0}));
 		}
 
 		if(keystates[SDL_SCANCODE_Q])
