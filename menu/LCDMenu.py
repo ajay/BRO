@@ -1,8 +1,11 @@
 import  RPi.GPIO as GPIO
 import time
 import Adafruit_CharLCD as LCD
+import subprocess
 
 lcd = LCD.Adafruit_CharLCDPlate()
+
+pathToProcess = "../robot/"
 
 # Make list of button value, text, and backlight color.
 buttons = ( (LCD.SELECT, 'Select', (1,1,1)),
@@ -43,7 +46,7 @@ def dLCD(but):
 	elif (dLCD.screen == 3): # 3 Traverse Maze
 		lcd.message(' Traverse Maze  \n<-            ->')
 		if (but == LCD.UP): dLCD.screen = 0
-		elif (but == LCD.DOWN): pass # Whatever Method to Traverse Maze
+		elif (but == LCD.DOWN): p = subprocess.Popen(pathToProcess + "./bruh");
 		elif (but == LCD.LEFT): dLCD.screen = 4
 		elif (but == LCD.RIGHT): dLCD.screen = 4
 	elif (dLCD.screen == 4): # 4 Solve Maze
@@ -64,6 +67,12 @@ def dLCD(but):
 		if (but == LCD.UP): dLCD.screen = 1
 		elif (but == LCD.LEFT): dLCD.screen = 5
 		elif (but == LCD.RIGHT): dLCD.screen = 5	
+	elif (dLCD.screen == 7): # Kill Screen
+		if (not prevScreen == 7): prev = prevScreen
+		lcd.message('Press any Button\n     To Stop    ');
+		if (but != -1): 
+			p.kill()
+			dLCD.screen = prev
 	if (not but == -1): lcd.clear()
 	prevScreen = dLCD.screen
 
