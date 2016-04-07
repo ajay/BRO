@@ -17,6 +17,7 @@ void pid_straight(BruhBot *bruh)
 
 		double base_vel = 0.35;
 		bruh->reset_encoders();
+		usleep(100000); // 100ms
 
 		int error = 0;
 		int error_sum = 0;
@@ -54,7 +55,7 @@ void pid_straight(BruhBot *bruh)
 
 			usleep(10000); // 10ms
 		}
-
+		bruh->send(std::vector<double>({0, 0}));
 		bruh->mode = "STOP";
 	}
 }

@@ -10,10 +10,12 @@
 // #include "slam.h"
 #include "pid.h"
 #include "window.h"
+#include "maze.h"
 
 using namespace std;
 
 static BruhBot bruh;
+Maze* maze = new Maze();
 static vector<double> motion = {0, 0};
 static int stopsig;
 
@@ -80,6 +82,9 @@ int main(int argc, char *argv[])
 
 	double v = 0.5; // velocity
 	string direction = "STOP";
+
+	maze->createPreviousBrownMaze();
+	maze->DFS();
 
 	while(!quit)
 	{
@@ -155,6 +160,7 @@ int main(int argc, char *argv[])
 		else if (bruh.mode == "STOP")
 		{
 			direction = "STOP";
+			bruh.reset_encoders();
 			bruh.send(vector<double>({0, 0}));
 		}
 
