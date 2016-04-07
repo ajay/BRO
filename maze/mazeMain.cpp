@@ -4,10 +4,10 @@ using namespace std;
 
 int main()
 {
-	Maze* maze = new Maze();
-	maze->createMaze();
+	Maze* bruhhhh = new Maze();
+	bruhhhh->createMaze();
 	cout<<"Maze"<<endl;
-	maze->printMaze();
+	bruhhhh->printMaze();
 	cout<<"DFS"<<endl;
-	maze->DFS();
+	bruhhhh->DFS();
 }

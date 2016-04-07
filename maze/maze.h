@@ -16,6 +16,10 @@ class Maze
 		~Maze();
 		void printMaze();
 		void createMaze();
+		void createPreviousBrownMaze();
 		void DFS();
-		cell maze[SIZE][SIZE];
+
+	protected:
+		int size;
+		cell maze[SIZE*SIZE];
 };
