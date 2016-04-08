@@ -101,6 +101,12 @@ class BruhBot
 		std::string pid_type = "STOP";
 		int pid_info = 0;
 
+		/**
+		 * Flag from Arduino telling pi that the robot can move
+		 * to the next step.
+		 */
+		int pidFinish;
+
 	private:
 		/**
 		 * Private method for handing data transfer over serial.

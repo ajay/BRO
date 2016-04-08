@@ -6,6 +6,8 @@
 #include <NewPing.h>
 #include <string.h>
 
+#include "pid.h"
+
 #define DEV_ID 1
 #define RAMP_CONST 1 // Higher is faster
 #define SPEED_LIMIT 255
@@ -37,12 +39,17 @@
 
 // Global vars
 const int safesize = BUFSIZE / 2;
-char buf[BUFSIZE];
+ char buf[BUFSIZE];
 char msg[BUFSIZE];
 char write_buffer[safesize];
 unsigned long msecs = 0;
 unsigned long timeout = 0;
 unsigned int encoder_reset = 0;
+
+// 0 == pid running, not finished
+// 1 == pid not running
+// 2 == pid running, waiting for pi to respond
+unsigned int pidFinish = 1;
 
 // Target and previous velocity arrays
 static int target_vel[2];
@@ -59,6 +66,10 @@ long int ping[4];
 // Initialize encoders, left, right
 Encoder encoders[2] = {	Encoder(ENCODER_LEFT_GREEN_PIN,  ENCODER_LEFT_YELLOW_PIN),
 						Encoder(ENCODER_RIGHT_GREEN_PIN, ENCODER_RIGHT_YELLOW_PIN)};
+
+#define TICKS_90 150
+#define TICKS_1_TILE 300
+#define TICK_THRESH 10
 
 // Limit function
 int limit(int x, int a, int b)
@@ -102,6 +113,75 @@ int rampMotor(int current_vel, int target_vel)
 	delta_vel = limit(delta_vel, -RAMP_CONST, RAMP_CONST);
 	current_vel = limit(current_vel + delta_vel, -SPEED_LIMIT, SPEED_LIMIT);
 	return current_vel;
+}
+
+int absAverageEnc() {
+	return (abs(encoders[0].read()) + abs(encoders[1].read())) / 2;
+}
+
+int errorStraight() {
+	return encoders[0].read() - encoders[1].read();
+}
+
+int errorForward() {
+	return TICKS_1_TILE - averageEnc();
+}
+
+int errorTurn() {
+	return TICKS_90 - absAverageEnc();
+}
+
+int averageEnc() {
+	return (encoders[0].read() + encoders[1].read()) / 2;
+}
+
+bool finishForward(int encVal) {
+	return abs(encVal - TICKS_1_TILE) <= TICK_THRESH;
+}
+
+bool finishTurn(int encVal) {
+	return abs(encVal - TICKS_90) <= TICK_THRESH;
+}
+
+// 2 = STRAIGHT, 3 = TURN_+90, 4 = TURN_-90
+void pidWithDir(int dir) {
+	if (pidFinish) {
+		return;
+	}
+
+	static PID PID_forward = PID(0.75, 0.00035, 0.0, &errorForward, &averageEnc, &finishForward);
+	static PID PID_turn = PID(2.0, 0.0005, 0, &errorTurn, &absAverageEnc, &finishTurn);
+	static PID PID_straight = PID(2.81, 0.002, 0, &errorStraight, &errorStraight, NULL);
+
+	int leftSpeed = 0, rightSpeed = 0;
+	switch (dir) {
+		case 2:
+			leftSpeed = PID_forward.getCurrSpeed();// - PID_straight.getCurrSpeed();
+			rightSpeed = PID_forward.getCurrSpeed();// + PID_straight.getCurrSpeed();
+
+			break;
+		case 3:
+			leftSpeed = -PID_turn.getCurrSpeed();
+			rightSpeed = PID_turn.getCurrSpeed();
+
+			break;
+		case 4:
+			leftSpeed = PID_turn.getCurrSpeed();
+			rightSpeed = -PID_turn.getCurrSpeed();
+
+			break;
+		default:
+			Serial.println("lol");
+			break;
+	}
+
+	setmotors(leftSpeed, rightSpeed);
+	if (leftSpeed == 0 && rightSpeed == 0) {
+		pidFinish = 2;
+		PID_forward.reset();
+		PID_straight.reset();
+		PID_turn.reset();
+	}
 }
 
 void setup()
@@ -153,30 +233,46 @@ void loop()
 		}
 	}
 
-	if (encoder_reset)
-	{
-		encoders[0].write(0);
-		encoders[1].write(0);
-		encoder_reset = 0;
-	}
+	// if it's not pid, act normal
+	if (encoder_reset < 2) {
+		if (pidFinish == 2) {
+			pidFinish = 1;
+		}
 
-	// EMERGENCY STOP: MASTER COMM LOST
-	if (millis() - timeout > 500)
-	{
-		// After .5 seconds, stop the robot
-		memset(target_vel, 0, sizeof(int) * 2);
-		memset(prev_vel, 0, sizeof(int) * 2);
-		setmotors(0, 0);
-		timeout = millis();
-	}
+		if (encoder_reset)
+		{
+			encoders[0].write(0);
+			encoders[1].write(0);
+			encoder_reset = 0;
+		}
 
-	// Ramp motors values, and determine next value to set
-	for (int i = 0; i < 2; i++)
-	{
-		prev_vel[i] = rampMotor(prev_vel[i], target_vel[i]);
-	}
+		// EMERGENCY STOP: MASTER COMM LOST
+		if (millis() - timeout > 500)
+		{
+			// After .5 seconds, stop the robot
+			memset(target_vel, 0, sizeof(int) * 2);
+			memset(prev_vel, 0, sizeof(int) * 2);
+			setmotors(0, 0);
+			timeout = millis();
+		}
 
-	setmotors(prev_vel[0], prev_vel[1]);
+		// Ramp motors values, and determine next value to set
+		for (int i = 0; i < 2; i++)
+		{
+			prev_vel[i] = rampMotor(prev_vel[i], target_vel[i]);
+		}
+
+		setmotors(prev_vel[0], prev_vel[1]);
+	} else {
+		if (pidFinish == 1) {
+			pidFinish = 0;
+		}
+		// do pid
+		pidWithDir(encoder_reset);
+   if (pidFinish == 2) {
+    setmotors(0, 0); 
+   }
+	}
 
 	// Send back data over serial every 100ms
 	if (millis() - msecs > 50)
@@ -186,7 +282,7 @@ void loop()
 			ping[i] = 1000 * ultrasonic[i].ping_cm();
 		}
 
-		sprintf(write_buffer, "[%d %d %d %ld %ld %ld %ld %ld %ld]\n",
+		sprintf(write_buffer, "[%d %d %d %ld %ld %ld %ld %ld %ld %d]\n",
 				DEV_ID,
 				prev_vel[0],
 				prev_vel[1],
@@ -195,8 +291,10 @@ void loop()
 				ping[2],
 				ping[3],
 				encoders[0].read(),
-				encoders[1].read());
+				encoders[1].read(),
+				pidFinish);
 		Serial.print(write_buffer);
 		msecs = millis();
 	}
 }
+

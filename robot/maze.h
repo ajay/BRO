@@ -8,7 +8,7 @@
 
 using namespace std;
 
-#define SIZE 16
+#define SIZE 6
 
 class Maze
 {
@@ -17,6 +17,7 @@ class Maze
 		~Maze();
 		void printMaze();
 		void createMaze();
+		void createMiniMaze();
 		void createPreviousBrownMaze();
 		void DFS();
 

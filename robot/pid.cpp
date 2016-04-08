@@ -13,7 +13,7 @@ void pid_straight(BruhBot *bruh)
 {
 	while (1)
 	{
-		while ((bruh->mode != "PID") and (bruh->mode != "AUTO"))
+		/*while ((bruh->mode != "PID") and (bruh->mode != "AUTO"))
 		{
 			usleep(100000); // 100ms
 		}
@@ -121,18 +121,19 @@ void pid_straight(BruhBot *bruh)
 			bruh->send(motion);
 
 			usleep(10000); // 10ms
-		}
+		}*/
 
 
-
-		bruh->send(std::vector<double>({0, 0}));
-		if (bruh->mode == "AUTO")
-		{
-			bruh->pid_type = "ADVANCE";
-		}
-		else
-		{
-			bruh->pid_type = "STOP";
+		if (bruh->pidFinish == 2) {
+			if (bruh->mode == "AUTO")
+			{
+				bruh->pid_type = "ADVANCE";
+			}
+			else
+			{
+				bruh->pid_type = "STOP";
+			}
+			bruh->pidFinish = 1;
 		}
 	}
 

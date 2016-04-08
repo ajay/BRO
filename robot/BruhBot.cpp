@@ -44,6 +44,8 @@ BruhBot::BruhBot(void)
 
 		exit(0);
 	}
+	
+	this->pidFinish = 1;
 }
 
 BruhBot::~BruhBot(void)
@@ -277,17 +279,32 @@ void BruhBot::threadSend(std::vector<double> motion)
 	char msg[WBUFSIZE];
 	for (int i = 0; i < (int)this->connections.size(); i++)
 	{
+		int runMode;
 		switch (this->ids[i])
 		{
 			// Arduino #1: BruhBot
 			case 1:
+
+				runMode = this->reset_enc;
+				if (runMode == 0) {
+					if (!this->mode.compare(0, 3, "PID")) {
+						if (!this->pid_type.compare(0, 8, "STRAIGHT")) {
+							runMode = 2;
+						} else if (!this->pid_type.compare(0, 8, "TURN_+90")) {
+							runMode = 3;
+						} else if (!this->pid_type.compare(0, 8, "TURN_-90")) {
+							runMode = 4;
+						}
+					}
+				}
+				printf("Run: %d Pid finish: %d\n", runMode, pidFinish);
 
 				this->prev_motion[0] = new_motion[0];
 				this->prev_motion[1] = new_motion[1];
 					sprintf(msg, "[%d %d %d]\n",
 						(int)new_motion[0],
 						(int)new_motion[1],
-						(int)this->reset_enc);
+						runMode);
 
 				serial_write(this->connections[i], msg);
 
@@ -337,8 +354,9 @@ void BruhBot::threadRecv(void)
 				if (msg != NULL)
 				{
 					double ultrasonic_1000[4];
+					// printf("%s\n", msg);
 
-					sscanf(msg, "[%*d %d %d %lf %lf %lf %lf %ld %ld]\n",
+					sscanf(msg, "[%*d %d %d %lf %lf %lf %lf %ld %ld %d]\n",
 						&this->motor_speeds[0],
 						&this->motor_speeds[1],
 						&ultrasonic_1000[0],
@@ -346,7 +364,8 @@ void BruhBot::threadRecv(void)
 						&ultrasonic_1000[2],
 						&ultrasonic_1000[3],
 						&this->encoder[0],
-						&this->encoder[1]);
+						&this->encoder[1],
+						&this->pidFinish);
 
 					for (int i = 0; i < 4; i++)
 					{
@@ -356,6 +375,21 @@ void BruhBot::threadRecv(void)
 
 			default:
 				break;
+		}
+
+		if (this->pidFinish == 2) {
+			printf("Done.\n");
+			if (this->mode == "AUTO")
+			{
+				this->pid_type = "ADVANCE";
+			}
+			else
+			{
+				// DEBUG: this->pid_type = "STOP";
+				// current
+				this->pid_type = "ADVANCE";
+			}
+			this->pidFinish = 1;
 		}
 	}
 }

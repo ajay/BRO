@@ -37,7 +37,7 @@ int Maze::getY(int last)
 
 int Maze::_i(int x, int y)
 {
-	return 16*y + x;
+	return size*y + x;
 }
 
 // Print the maze once constructed
@@ -97,6 +97,77 @@ void Maze::printMaze()
 	cout <<endl;
 }
 
+void Maze::createMiniMaze() {
+	std::vector<int> walls[SIZE * SIZE];
+
+	// Row 0
+	walls[_i( 0, 0)] = {1, 1, 1, 0};
+	walls[_i( 1, 0)] = {1, 1, 0, 0};
+	walls[_i( 2, 0)] = {1, 0, 0, 1};
+	walls[_i( 3, 0)] = {1, 0, 1, 0};
+	walls[_i( 4, 0)] = {1, 1, 0, 0};
+	walls[_i( 5, 0)] = {1, 1, 0, 1};
+
+	// Row 1
+	walls[_i( 0, 1)] = {1, 0, 1, 0};
+	walls[_i( 1, 1)] = {1, 0, 0, 0};
+	walls[_i( 2, 1)] = {0, 1, 0, 0};
+	walls[_i( 3, 1)] = {0, 1, 0, 0};
+	walls[_i( 4, 1)] = {1, 1, 0, 0};
+	walls[_i( 5, 1)] = {1, 0, 0, 1};
+
+	// Row 2
+	walls[_i( 0, 2)] = {0, 0, 1, 1};
+	walls[_i( 1, 2)] = {0, 0, 1, 1};
+	walls[_i( 2, 2)] = {1, 0, 1, 0};
+	walls[_i( 3, 2)] = {1, 0, 0, 0};
+	walls[_i( 4, 2)] = {1, 1, 0, 0};
+	walls[_i( 5, 2)] = {0, 0, 0, 1};
+
+	// Row 3
+	walls[_i( 0, 3)] = {0, 0, 1, 1};
+	walls[_i( 1, 3)] = {0, 0, 1, 1};
+	walls[_i( 2, 3)] = {0, 1, 1, 0};
+	walls[_i( 3, 3)] = {0, 1, 0, 1};
+	walls[_i( 4, 3)] = {1, 0, 1, 1};
+	walls[_i( 5, 3)] = {0, 0, 1, 1};
+
+	// Row 4
+	walls[_i( 0, 4)] = {0, 0, 1, 1};
+	walls[_i( 1, 4)] = {0, 1, 1, 0};
+	walls[_i( 2, 4)] = {1, 1, 0, 0};
+	walls[_i( 3, 4)] = {1, 1, 0, 0};
+	walls[_i( 4, 4)] = {0, 1, 0, 1};
+	walls[_i( 5, 4)] = {0, 0, 1, 1};
+
+	// Row 5
+	walls[_i( 0, 5)] = {0, 1, 1, 0};
+	walls[_i( 1, 5)] = {1, 1, 0, 0};
+	walls[_i( 2, 5)] = {1, 1, 0, 0};
+	walls[_i( 3, 5)] = {1, 1, 0, 0};
+	walls[_i( 4, 5)] = {1, 1, 0, 1};
+	walls[_i( 5, 5)] = {0, 1, 1, 1};
+
+	for (int c = 0; c < size * size; c++)
+	{
+		cell *north = (walls[c][0] == 1) ? NULL : &maze[_i(getX(c), getY(c)-1)];
+		cell *south = (walls[c][1] == 1) ? NULL : &maze[_i(getX(c), getY(c)+1)];
+		cell *west  = (walls[c][2] == 1) ? NULL : &maze[_i(getX(c)-1, getY(c))];
+		cell *east  = (walls[c][3] == 1) ? NULL : &maze[_i(getX(c)+1, getY(c))];
+		maze[c].setWalls(north, south, west, east);
+	}
+}
+
+/*
+walls[_i( 0,  0)] = {1, 1, 1, 0};
+--
+|
+--
+
+walls[_i(15,  0)] = {1, 0, 0, 1};
+_
+  |
+  */
 
 void Maze::createPreviousBrownMaze()
 {
@@ -544,7 +615,7 @@ void Maze::DFS()
 	int num = 0;
 	int reset = 0;
 
-	int goal = _i(7, 7);
+	int goal = _i(size / 2 - 1, size/2 - 1);
 
 	while(s.empty()==false)
 	{

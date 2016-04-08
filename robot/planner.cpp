@@ -32,6 +32,7 @@ void auton()
 		{
 			if (bruh.mode != "AUTO")
 			{
+				cout << bruh.mode << "\n";
 				break;
 			}
 
@@ -49,22 +50,25 @@ void auton()
 			}
 			else
 			{
+				bruh.reset_encoders();
+				bruh.mode = "PID";
 				bruh.pid_type = maze->path_instructions[i];
-
-				if ((maze->path_instructions[i] == "TURN_-90") or (maze->path_instructions[i] == "TURN_+90"))
+				/*if ((maze->path_instructions[i] == "TURN_-90") or (maze->path_instructions[i] == "TURN_+90"))
 				{
 					usleep(500000); // 500ms
 					bruh.reset_encoders();
 					usleep(500000); // 500ms
 					bruh.pid_type = "STRAIGHT";
-				}
+				}*/
 			}
 
 			while (bruh.pid_type != "ADVANCE")
 			{
+				cout << bruh.pid_type << "\n";
 				usleep(10000); // 10ms
 			}
 
+			bruh.mode = "AUTO";
 		}
 	}
 }
@@ -134,7 +138,8 @@ int main(int argc, char *argv[])
 	double v = 0.5; // velocity
 	string direction = "STOP";
 
-	maze->createPreviousBrownMaze();
+	//maze->createPreviousBrownMaze();
+	maze->createMiniMaze();
 	maze->DFS();
 
 	while(!quit)
