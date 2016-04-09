@@ -2,6 +2,8 @@ import  RPi.GPIO as GPIO
 import time
 import Adafruit_CharLCD as LCD
 import subprocess
+import os
+import signal
 
 lcd = LCD.Adafruit_CharLCDPlate()
 
@@ -26,6 +28,7 @@ class Encoder: # For Encoders
 
 def dLCD(but):
 	if (not hasattr(dLCD, "screen")): dLCD.screen = 0
+    if (not hasattr(dLCD, "p")): dLCD.p = None
 	print(dLCD.screen)
 	print(but)
 	prevScreen = 0
@@ -46,8 +49,8 @@ def dLCD(but):
 	elif (dLCD.screen == 3): # 3 Traverse Maze
 		lcd.message(' Traverse Maze  \n<-            ->')
 		if (but == LCD.UP): dLCD.screen = 0
-		elif (but == LCD.DOWN): 
-			p = subprocess.Popen(pathToProcess + "./bruh");
+		elif (but == LCD.DOWN):
+			dLCD.p = subprocess.Popen(pathToProcess + "./bruh",shell=True);
 			dLCD.screen = 7;
 		elif (but == LCD.LEFT): dLCD.screen = 4
 		elif (but == LCD.RIGHT): dLCD.screen = 4
@@ -57,7 +60,7 @@ def dLCD(but):
 		elif (but == LCD.DOWN): pass # Whatever Method to Solve Maze
 		elif (but == LCD.LEFT): dLCD.screen = 3
 		elif (but == LCD.RIGHT): dLCD.screen = 3
-	elif (dLCD.screen == 5): # 5 Ultrasonic 
+	elif (dLCD.screen == 5): # 5 Ultrasonic
 		if (not prevScreen == 5): lcd.message(getUltra(Ultra.l) + ' ' + getUltra(Ultra.f) + ' ' + getUltra(Ultra.r) + ' ' + getUltra(Ultra.b) + ' \n L   F   R   B  ')
 		else: lcd.message(getUltra(Ultra.l) + ' ' + getUltra(Ultra.f) + ' ' + getUltra(Ultra.r) + ' ' + getUltra(Ultra.b))
 		if (but == LCD.UP): dLCD.screen = 1
@@ -69,11 +72,18 @@ def dLCD(but):
 		if (but == LCD.UP): dLCD.screen = 1
 		elif (but == LCD.LEFT): dLCD.screen = 5
 		elif (but == LCD.RIGHT): dLCD.screen = 5
+
+    elif (dLCD.screen == 7): # Shut down
+        lcd.message('   Shut Down')
+        if (but == LCD.UP): dLCD.screen = 0
+        elif (but == LCD.DOWN): 
+
 	elif (dLCD.screen == 7): # Kill Screen
 		if (not prevScreen == 7): prev = prevScreen
 		lcd.message('Press any Button\n     To Stop    ');
-		if (but != -1): 
-			p.kill()
+		if (but != -1):
+			# dLCD.p.kill()
+            os.killpg(os.getpgid(dLCD.p.pid), signal.SIGINT)
 			dLCD.screen = prev
 	if (not but == -1): lcd.clear()
 	prevScreen = dLCD.screen
@@ -90,7 +100,7 @@ buttonArray = [True, True, True, True, True]
 buttonArrayPrev = [True, True, True, True, True]
 change = -1
 while True:
-	for i in range(0, len(buttonArray)): 
+	for i in range(0, len(buttonArray)):
 		#print(buttons[i])
 		buttonArray[i] = lcd.is_pressed(buttons[i][0])
 		if (buttonArray[i] and not buttonArrayPrev[i]):
@@ -102,4 +112,3 @@ while True:
 	change = -1
 	buttonArrayPrev = buttonArray[:]
 	time.sleep(.1)
-
