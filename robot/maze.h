@@ -5,6 +5,7 @@
 #include <time.h>
 
 #include "cell.h"
+#include "BruhBot.h"
 
 #define ULTRA_FRONT 0
 #define ULTRA_LEFT  2
@@ -26,11 +27,13 @@ class Maze
 		void createPreviousBrownMaze();
 		void DFS();
 
+		void map(BruhBot *bruh);
+
 		std::vector<string> path_instructions;
 		std::vector<int> path;
 
-		stack <cell> neighbors;
-		stack <cell> used;
+		stack <cell*> neighbors;
+		stack <cell*> used;
 
 
 		int getX(int last);

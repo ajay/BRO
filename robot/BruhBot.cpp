@@ -21,6 +21,12 @@ static double limitf(double x, double min, double max)
 	else 				{ return x;	  }
 }
 
+
+void BruhBot::move(std::string action)
+{
+
+}
+
 BruhBot::BruhBot(void)
 {
 	this->prev_motion = vector<double>(2, 0);
@@ -44,7 +50,7 @@ BruhBot::BruhBot(void)
 
 		exit(0);
 	}
-	
+
 	this->pidFinish = 1;
 }
 

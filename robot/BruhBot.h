@@ -103,6 +103,9 @@ class BruhBot
 		std::vector<int> position;
 		int orientation = 0;
 
+
+		void move(std::string action);
+
 		/**
 		 * Flag from Arduino telling pi that the robot can move
 		 * to the next step.

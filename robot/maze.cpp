@@ -1,6 +1,7 @@
-#include "this->h"
+#include "maze.h"
 #include <vector>
 #include <algorithm>
+#include "BruhBot.h"
 
 using namespace std;
 
@@ -491,14 +492,13 @@ void Maze::createPreviousBrownMaze()
 	}
 }
 
-void Maze::map(BruhBot &bruh)
+void Maze::map(BruhBot *bruh)
 {
 	int x = 0, y = 0;
-	cell *curr = this->_i(x,y);
+	cell *curr = &this->maze[_i(x, y)];
 	cell *temp;
 	int visi = 1;
 	string nextMove = "STOP";
-
 
 	while(visi < SIZE*SIZE)
 	{
@@ -515,30 +515,31 @@ void Maze::map(BruhBot &bruh)
 
 			if(bruh->orientation == 90)
 			{
-				curr->north = this->_i(x, y++);
-				temp = curr->north;
-				this->_i(x, y++)->south = curr;
+				curr->setNorth(&this->maze[_i(x, y++)]);
+				temp = curr->getNorth();
+				this->maze[_i(x, y++)].setSouth(curr);
 			}
 			else if(bruh->orientation == 0)
 			{
-				curr->east = this->_i(x++, y);
-				temp = curr->east;
-				this->_i(x++, y)->west = curr;
+				curr->setEast(&this->maze[_i(x++, y)]);
+				temp = curr->getEast();
+				this->maze[_i(x++, y)].setWest(curr);
 			}
 			else if(bruh->orientation == 270)
 			{
-				curr->south = this->_i(x, y--);
-				temp = curr->south;
-				this->_i(x, y--)->north = curr;
+				curr->setSouth(&this->maze[_i(x, y--)]);
+				temp = curr->getSouth();
+				this->maze[_i(x, y--)].setNorth(curr);
 			}
 			else if(bruh->orientation == 180)
 			{
-				curr->west = this->_i(x--, y);
-				temp = curr->west;
-				this->_i(x--, y)->east = curr;
+				curr->setWest(&this->maze[_i(x--, y)]);
+				temp = curr->getWest();
+				this->maze[_i(x--, y)].setEast(curr);
 			}
-			if(temp.visited == 0)
-			{	
+			if(temp->getVisited() == 0)
+			{
+				temp->setParent(curr);
 				this->neighbors.push(temp);
 			}
 		}
@@ -556,30 +557,31 @@ void Maze::map(BruhBot &bruh)
 
 			if(bruh->orientation == 0)
 			{
-				curr->north = this->_i(x, y++);
-				temp = curr->north;
-				this->_i(x, y++)->south = curr;
+				curr->setNorth(&this->maze[_i(x, y++)]);
+				temp = curr->getNorth();
+				this->maze[_i(x, y++)].setSouth(curr);
 			}
 			else if(bruh->orientation == 270)
 			{
-				curr->east = this->_i(x++, y);
-				temp = curr->east;
-				this->_i(x++, y)->west = curr;
+				curr->setEast(&this->maze[_i(x++, y)]);
+				temp = curr->getEast();
+				this->maze[_i(x++, y)].setWest(curr);
 			}
 			else if(bruh->orientation == 180)
 			{
-				curr->south = this->_i(x, y--);
-				temp = curr->south;
-				this->_i(x, y--)->north = curr;
+				curr->setSouth(&this->maze[_i(x, y--)]);
+				temp = curr->getSouth();
+				this->maze[_i(x, y--)].setNorth(curr);
 			}
 			else if(bruh->orientation == 90)
 			{
-				curr->west = this->_i(x--, y);
-				temp = curr->west;
-				this->_i(x--, y)->east = curr;
+				curr->setWest(&this->maze[_i(x--, y)]);
+				temp = curr->getWest();
+				this->maze[_i(x--, y)].setEast(curr);
 			}
-			if(temp.visited == 0)
-			{	
+			if(temp->getVisited() == 0)
+			{
+				temp->setParent(curr);
 				this->neighbors.push(temp);
 			}
 		}
@@ -597,121 +599,119 @@ void Maze::map(BruhBot &bruh)
 
 			if(bruh->orientation == 180)
 			{
-				curr->north = this->_i(x, y++);
-				temp = curr->north;
-				this->_i(x, y++)->south = curr;
+				curr->setNorth(&this->maze[_i(x, y++)]);
+				temp = curr->getNorth();
+				this->maze[_i(x, y++)].setSouth(curr);
 			}
 			else if(bruh->orientation == 90)
 			{
-				curr->east = this->_i(x++, y);
-				temp = curr->east;
-				this->_i(x++, y)->west = curr;
+				curr->setEast(&this->maze[_i(x++, y)]);
+				temp = curr->getEast();
+				this->maze[_i(x++, y)].setWest(curr);
 			}
 			else if(bruh->orientation == 0)
 			{
-				curr->south = this->_i(x, y--);
-				temp = curr->south;
-				this->_i(x, y--)->north = curr;
+				curr->setSouth(&this->maze[_i(x, y--)]);
+				temp = curr->getSouth();
+				this->maze[_i(x, y--)].setNorth(curr);
 			}
 			else if(bruh->orientation == 270)
 			{
-				curr->west = this->_i(x--, y);
-				temp = curr->west;
-				this->_i(x--, y)->east = curr;
+				curr->setWest(&this->maze[_i(x--, y)]);
+				temp = curr->getWest();
+				this->maze[_i(x--, y)].setEast(curr);
 			}
-			if(temp.visited == 0)
-			{	
+			if(temp->getVisited() == 0)
+			{
+				temp->setParent(curr);
 				this->neighbors.push(temp);
 			}
 		}
-		
-//move function seperate later!!
-		temp = this->neighbors.pop();
 
-		if(temp->south != NULL && curr->north == temp->south )
-		{
-			if(bruh->orientation == 0){
-				nextMove = "TURN_+90";
-			}
-			else if(bruh->orientation == 90){
-				nextMove = "FORWARD";
-			}
-			else if(bruh->orientation == 180){
-				nextMove = "TURN_-90";
-			}
-			else if(bruh->orientation == 270){
-				nextMove = "TURN_180";
-			}
-		}
-		else if (temp->west != NULL && curr->east == temp->west)
-		{
-			if(bruh->orientation == 0){
-				nextMove = "FORWARD";
-			}
-			else if(bruh->orientation == 90){
-				nextMove = "TURN_-90";
-			}
-			else if(bruh->orientation == 180){
-				nextMove = "TURN_180";
-			}
-			else if(bruh->orientation == 270){
-				nextMove = "TURN_+90";
-			}
-		} 
-		else if (temp->north != NULL && curr->south == temp->north)
-		{
-			if(bruh->orientation == 0){
-				nextMove = "TURN_-90";
-			}
-			else if(bruh->orientation == 90){
-				nextMove = "TURN_180";
-			}
-			else if(bruh->orientation == 180){
-				nextMove = "TURN_+90";
-			}
-			else if(bruh->orientation == 270){
-				nextMove = "FORWARD";
-			}
-		}
-		else if (temp->east !+ NULL && curr->west == temp->east)
-		{
-			if(bruh->orientation == 0){
-				nextMove = "TURN_180";
-			}
-			else if(bruh->orientation == 90){
-				nextMove = "TURN_+90";
-			}
-			else if(bruh->orientation == 180){
-				nextMove = "FORWARD";
-			}
-			else if(bruh->orientation == 270){
-				nextMove = "TURN_-90";
-			}
-		}
-			
+		//Push curr Node to stack
+		this->used.push(curr);
 
+		//Determine which cell to move to next
+		if(this->neighbors.top()->getParent() == this->used.top())
+		{
+			temp = this->neighbors.top();
+			this->neighbors.pop();
+		}
+		else
+		{
+			temp = this->used.top();
+			this->used.pop();
+		}
+
+
+		if(temp->getSouth() != NULL && curr->getNorth() == temp->getSouth() )
+		{
+			if(bruh->orientation == 0){
+				nextMove = "TURN_+90";
+			}
+			else if(bruh->orientation == 90){
+				nextMove = "FORWARD";
+			}
+			else if(bruh->orientation == 180){
+				nextMove = "TURN_-90";
+			}
+			else if(bruh->orientation == 270){
+				nextMove = "TURN_180";
+			}
+		}
+		else if (temp->getWest() != NULL && curr->getEast() == temp->getWest())
+		{
+			if(bruh->orientation == 0){
+				nextMove = "FORWARD";
+			}
+			else if(bruh->orientation == 90){
+				nextMove = "TURN_-90";
+			}
+			else if(bruh->orientation == 180){
+				nextMove = "TURN_180";
+			}
+			else if(bruh->orientation == 270){
+				nextMove = "TURN_+90";
+			}
+		}
+		else if (temp->getNorth() != NULL && curr->getSouth() == temp->getNorth())
+		{
+			if(bruh->orientation == 0){
+				nextMove = "TURN_-90";
+			}
+			else if(bruh->orientation == 90){
+				nextMove = "TURN_180";
+			}
+			else if(bruh->orientation == 180){
+				nextMove = "TURN_+90";
+			}
+			else if(bruh->orientation == 270){
+				nextMove = "FORWARD";
+			}
+		}
+		else if (temp->getEast() != NULL && curr->getWest() == temp->getEast())
+		{
+			if(bruh->orientation == 0){
+				nextMove = "TURN_180";
+			}
+			else if(bruh->orientation == 90){
+				nextMove = "TURN_+90";
+			}
+			else if(bruh->orientation == 180){
+				nextMove = "FORWARD";
+			}
+			else if(bruh->orientation == 270){
+				nextMove = "TURN_-90";
+			}
+		}
 
 			bruh->move(nextMove);
 			this->used.push(curr);
-			curr = temp; 
-			curr.visited = 1;
-			if(curr.visited = 0){
+			curr = temp;
+			if(curr->getVisited() == 0){
 				visi++;
 			}
-			else if(curr.visited = 1){
-				while(curr->north != NULL && curr->north.visited = 1  )
-				{
-
-				}
-			}
-			if(bruh->ultrasonic[ULTRA_FRONT] < threshold && bruh->ultrasonic[ULTRA_RIGHT] < threshold && bruh->ultrasonic[ULTRA_LEFT]){
-				//traverse back
-				while(1)
-				{
-
-				}
-			}
-
+			curr->setVisited(1);
 
 			//update cells for visited
 	}
