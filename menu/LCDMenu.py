@@ -42,10 +42,11 @@ def dLCD(but):
 		if (but == LCD.LEFT): dLCD.screen = 0
 		elif (but == LCD.RIGHT): dLCD.screen = 2
 		elif (but == LCD.DOWN): dLCD.screen = 5
-	elif (dLCD.screen == 2): # 2 Other screen on this level, might need it...
-		lcd.message('  Other Screen  \n<-            ->')
-		if (but == LCD.LEFT): dLCD.screen = 1
-		elif (but == LCD.RIGHT): dLCD.screen = 0
+	elif (dLCD.screen == 2): # Power Off
+        lcd.message('   Shut Down')
+        if (but == LCD.LEFT): dLCD.screen = 1
+        elif (bu == LCD.RIGHT): dLCD.screen = 0
+        elif (but == LCD.DOWN): os.system("poweroff")
 	elif (dLCD.screen == 3): # 3 Traverse Maze
 		lcd.message(' Traverse Maze  \n<-            ->')
 		if (but == LCD.UP): dLCD.screen = 0
@@ -72,12 +73,6 @@ def dLCD(but):
 		if (but == LCD.UP): dLCD.screen = 1
 		elif (but == LCD.LEFT): dLCD.screen = 5
 		elif (but == LCD.RIGHT): dLCD.screen = 5
-
-    elif (dLCD.screen == 7): # Shut down
-        lcd.message('   Shut Down')
-        if (but == LCD.UP): dLCD.screen = 0
-        elif (but == LCD.DOWN): 
-
 	elif (dLCD.screen == 7): # Kill Screen
 		if (not prevScreen == 7): prev = prevScreen
 		lcd.message('Press any Button\n     To Stop    ');
