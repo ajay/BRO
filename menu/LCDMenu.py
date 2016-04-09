@@ -46,7 +46,9 @@ def dLCD(but):
 	elif (dLCD.screen == 3): # 3 Traverse Maze
 		lcd.message(' Traverse Maze  \n<-            ->')
 		if (but == LCD.UP): dLCD.screen = 0
-		elif (but == LCD.DOWN): p = subprocess.Popen(pathToProcess + "./bruh");
+		elif (but == LCD.DOWN): 
+			p = subprocess.Popen(pathToProcess + "./bruh");
+			dLCD.screen = 7;
 		elif (but == LCD.LEFT): dLCD.screen = 4
 		elif (but == LCD.RIGHT): dLCD.screen = 4
 	elif (dLCD.screen == 4): # 4 Solve Maze
@@ -66,7 +68,7 @@ def dLCD(but):
 		else: lcd.message(' ' + getEncoder(Encoder.l) + '    ' + getEncoder(Encoder.r))
 		if (but == LCD.UP): dLCD.screen = 1
 		elif (but == LCD.LEFT): dLCD.screen = 5
-		elif (but == LCD.RIGHT): dLCD.screen = 5	
+		elif (but == LCD.RIGHT): dLCD.screen = 5
 	elif (dLCD.screen == 7): # Kill Screen
 		if (not prevScreen == 7): prev = prevScreen
 		lcd.message('Press any Button\n     To Stop    ');
