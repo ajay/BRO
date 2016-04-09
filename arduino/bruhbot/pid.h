@@ -7,10 +7,12 @@
       int getCurrSpeed();
       void reset();
       void setBaseVel(double new_vel);
+      bool isFinished();
     private:
       // Limit function
       float limit(float x, float a, float b);
 
+      int finishTimer;
       int finishCount;
 
       double base_vel;

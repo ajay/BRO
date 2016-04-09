@@ -63,13 +63,16 @@ NewPing us_right(US_RIGHT_TRIGGER_PIN, US_RIGHT_ECHO_PIN, MAX_DISTANCE);
 NewPing ultrasonic[4] = {us_front, us_back, us_left, us_right}; // front, back, left, right
 long int ping[4];
 
+long int pastPings[4][5];
+int currPos = 0;
+
 // Initialize encoders, left, right
 Encoder encoders[2] = {	Encoder(ENCODER_LEFT_GREEN_PIN,  ENCODER_LEFT_YELLOW_PIN),
 						Encoder(ENCODER_RIGHT_GREEN_PIN, ENCODER_RIGHT_YELLOW_PIN)};
 
-#define TICKS_90 150
-#define TICKS_1_TILE 300
-#define TICK_THRESH 10
+#define TICKS_90 200
+#define TICKS_1_TILE 486
+#define TICK_THRESH 5
 
 // Limit function
 int limit(int x, int a, int b)
@@ -115,12 +118,20 @@ int rampMotor(int current_vel, int target_vel)
 	return current_vel;
 }
 
+int averageEnc() {
+  return (encoders[0].read() + encoders[1].read()) / 2;
+}
+
 int absAverageEnc() {
 	return (abs(encoders[0].read()) + abs(encoders[1].read())) / 2;
 }
 
 int errorStraight() {
 	return encoders[0].read() - encoders[1].read();
+}
+
+int errorTC() {
+  return abs(encoders[0].read()) - abs(encoders[1].read());
 }
 
 int errorForward() {
@@ -131,10 +142,6 @@ int errorTurn() {
 	return TICKS_90 - absAverageEnc();
 }
 
-int averageEnc() {
-	return (encoders[0].read() + encoders[1].read()) / 2;
-}
-
 bool finishForward(int encVal) {
 	return abs(encVal - TICKS_1_TILE) <= TICK_THRESH;
 }
@@ -143,32 +150,84 @@ bool finishTurn(int encVal) {
 	return abs(encVal - TICKS_90) <= TICK_THRESH;
 }
 
+bool finishStraight(int diffVal) {
+  return abs(diffVal) <= 20;
+}
+
 // 2 = STRAIGHT, 3 = TURN_+90, 4 = TURN_-90
 void pidWithDir(int dir) {
 	if (pidFinish) {
 		return;
 	}
 
-	static PID PID_forward = PID(0.75, 0.00035, 0.0, &errorForward, &averageEnc, &finishForward);
-	static PID PID_turn = PID(2.0, 0.0005, 0, &errorTurn, &absAverageEnc, &finishTurn);
-	static PID PID_straight = PID(2.81, 0.002, 0, &errorStraight, &errorStraight, NULL);
+	static PID PID_forward = PID(0.60, 0.00002, 0.0, &errorForward, &averageEnc, &finishForward);
+	static PID PID_turn = PID(7.5, 0.00001, 0.00001, &errorTurn, &absAverageEnc, &finishTurn);
+	static PID PID_straight = PID(8.5, 0.000005, 0.0, &errorStraight, &errorStraight, &finishStraight);
+  static PID PID_turnCorrect = PID(8.0, 0.00001, 0.0, &errorTC, &errorTC, &finishStraight);
+  static bool resetPID = true;
+
+  if (resetPID) {
+    PID_forward.reset();
+    PID_straight.reset();
+    PID_turn.reset();
+    PID_turnCorrect.reset();
+    resetPID = false;
+  }
 
 	int leftSpeed = 0, rightSpeed = 0;
+  int forwardSpeed;
+  int straightSpeed;
+  int turnSpeed;
 	switch (dir) {
 		case 2:
-			leftSpeed = PID_forward.getCurrSpeed();// - PID_straight.getCurrSpeed();
-			rightSpeed = PID_forward.getCurrSpeed();// + PID_straight.getCurrSpeed();
+      forwardSpeed = PID_forward.getCurrSpeed();
+      straightSpeed = PID_straight.getCurrSpeed();
+			leftSpeed = forwardSpeed - straightSpeed / 2;
+			rightSpeed = forwardSpeed + straightSpeed / 2;
+
+      if (PID_forward.isFinished() && PID_straight.isFinished()) {
+        resetPID = true;
+        setmotors(0, 0);
+        pidFinish = 2;
+        return;
+      }
 
 			break;
 		case 3:
-			leftSpeed = -PID_turn.getCurrSpeed();
-			rightSpeed = PID_turn.getCurrSpeed();
+      turnSpeed = PID_turn.getCurrSpeed();
+      straightSpeed = PID_turnCorrect.getCurrSpeed();
+			leftSpeed = 1.3 * -turnSpeed + 0.3 * straightSpeed;
+			rightSpeed = 1.3 * turnSpeed - 0.3 * straightSpeed;
 
+     //char debug[50];
+     //sprintf(debug, "%d %d %d %d", turnSpeed, straightSpeed, leftSpeed, rightSpeed);
+     //Serial.println(debug);
+
+      if (PID_turn.isFinished() && PID_turnCorrect.isFinished()) {
+        resetPID = true;
+        setmotors(0, 0);
+        pidFinish = 2;
+        return;
+      }
+      
 			break;
 		case 4:
-			leftSpeed = PID_turn.getCurrSpeed();
-			rightSpeed = -PID_turn.getCurrSpeed();
+      turnSpeed = PID_turn.getCurrSpeed();
+      straightSpeed = PID_turnCorrect.getCurrSpeed();
+			leftSpeed = 1.3 * turnSpeed - 0.3 * straightSpeed;
+			rightSpeed = 1.3 * -turnSpeed + 0.3 * straightSpeed;
 
+      //char debug2[50];
+     //sprintf(debug2, "%d %d %d %d", turnSpeed, straightSpeed, leftSpeed, rightSpeed);
+     //Serial.println(debug2);
+      
+      if (PID_turn.isFinished() && PID_turnCorrect.isFinished()) {
+        resetPID = true;
+        setmotors(0, 0);
+        pidFinish = 2;
+        return;
+      }
+      
 			break;
 		default:
 			Serial.println("lol");
@@ -176,12 +235,6 @@ void pidWithDir(int dir) {
 	}
 
 	setmotors(leftSpeed, rightSpeed);
-	if (leftSpeed == 0 && rightSpeed == 0) {
-		pidFinish = 2;
-		PID_forward.reset();
-		PID_straight.reset();
-		PID_turn.reset();
-	}
 }
 
 void setup()
@@ -198,6 +251,12 @@ void setup()
 	digitalWrite(DRV8835_PHASE_ENABLE_PIN, HIGH); // MODE    --> Setting MODE pin to HIGH
 
 	timeout = millis();
+
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 5; j++) {
+			pastPings[i][j] = -1;
+		}
+	}
 }
 
 void loop()
@@ -264,23 +323,63 @@ void loop()
 
 		setmotors(prev_vel[0], prev_vel[1]);
 	} else {
+    // EMERGENCY STOP: MASTER COMM LOST
+    if (millis() - timeout > 500)
+    {
+      // After .5 seconds, stop the robot
+      memset(target_vel, 0, sizeof(int) * 2);
+      memset(prev_vel, 0, sizeof(int) * 2);
+      setmotors(0, 0);
+      timeout = millis();
+    }
+    
 		if (pidFinish == 1) {
 			pidFinish = 0;
 		}
 		// do pid
 		pidWithDir(encoder_reset);
-   if (pidFinish == 2) {
-    setmotors(0, 0); 
-   }
+		if (pidFinish == 2) {
+		   setmotors(0, 0); 
+		}
 	}
 
 	// Send back data over serial every 100ms
 	if (millis() - msecs > 50)
 	{
+    long int tempArr[5];
 		for (int i = 0; i < 4; i++)
 		{
-			ping[i] = 1000 * ultrasonic[i].ping_cm();
+			// add ping to record
+			pastPings[i][currPos] = 1000 * ultrasonic[i].ping_cm();
+
+			// stop if we haven't taken 5 measurements yet
+			if (pastPings[i][(currPos + 1) % 5] < 0) {
+				ping[i] = 0;
+				continue;
+			}
+
+      // move it to a throw away array
+      for (int j = 0; j < 5; j++) {
+        tempArr[j] = pastPings[i][j];
+      }
+      
+			// insertion sort recorded pings
+			for (int j = 1; j < 5; j++) {
+				for (int k = j - 1; k >= 0; k--) {
+					if (tempArr[k] <= tempArr[k + 1]) {
+						break;
+					}
+
+					long int temp = tempArr[k];
+					tempArr[k] = tempArr[k + 1];
+					tempArr[k + 1] = temp;
+				}
+			}
+
+			// take median
+			ping[i] = tempArr[2];
 		}
+    currPos = (currPos + 1) % 5;
 
 		sprintf(write_buffer, "[%d %d %d %ld %ld %ld %ld %ld %ld %d]\n",
 				DEV_ID,

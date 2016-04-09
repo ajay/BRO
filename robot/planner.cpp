@@ -64,7 +64,7 @@ void auton()
 
 			while (bruh.pid_type != "ADVANCE")
 			{
-				cout << bruh.pid_type << "\n";
+				//cout << bruh.pid_type << "\n";
 				usleep(10000); // 10ms
 			}
 

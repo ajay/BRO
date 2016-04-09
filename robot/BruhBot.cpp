@@ -2,6 +2,7 @@
 #include <dirent.h>
 #include <pthread.h>
 #include <termios.h>
+#include <iostream>
 #include <string>
 
 #include "BruhBot.h"
@@ -303,7 +304,7 @@ void BruhBot::threadSend(std::vector<double> motion)
 						}
 					}
 				}
-				printf("Run: %d Pid finish: %d\n", runMode, pidFinish);
+				//printf("Run: %d Pid finish: %d\n", runMode, pidFinish);
 
 				this->prev_motion[0] = new_motion[0];
 				this->prev_motion[1] = new_motion[1];
@@ -378,6 +379,8 @@ void BruhBot::threadRecv(void)
 						this->ultrasonic[i] = (float)((float)ultrasonic_1000[i] / 1000);
 					}
 				}
+				printf("%d %d %ld %ld %d", this->motor_speeds[0], this->motor_speeds[1], this->encoder[0], this->encoder[1], this->pidFinish);
+				cout << this->mode << " " << this->pid_type << "\n";
 
 			default:
 				break;

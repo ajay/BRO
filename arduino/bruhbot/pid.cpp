@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "pid.h"
 
-#define NUM_FINISH 25
+#define NUM_FINISH 100
 
 PID::PID(float kP, float kI, float kD, 
          int (*errorFunc)( void ), int (*sensorFunc)( void ), bool (*finishFunc)( int )) 
@@ -31,6 +31,8 @@ void PID::reset() {
   this->base_vel = 0;
 
   this->finishCount = 0;
+
+  this->finishTimer = millis();
 }
 
 void PID::setBaseVel(double new_vel) {
@@ -45,16 +47,32 @@ float PID::limit(float x, float a, float b)
 	else			{ return x;	}
 }
 
+bool PID::isFinished()
+{
+  int sensorVal = this->sensorFunc();
+  static int finishCount = 0;
+
+  if (millis() - finishTimer >= 3000) {
+    Serial.println("Failed.");
+    return true;
+  }
+  
+  if (finishFunc != NULL) {
+    bool isFinished = this->finishFunc(sensorVal);
+    finishCount = (isFinished ? finishCount + 1 : 0);
+    if (isFinished && finishCount >= NUM_FINISH) {
+      return true;
+    }
+  }
+  return false;
+}
+
 int PID::getCurrSpeed() {
 	int sensorVal = this->sensorFunc();
 	int error = this->errorFunc();
 
-	if (finishFunc != NULL) {
-		bool isFinished = this->finishFunc(sensorVal);
-    finishCount = (isFinished ? finishCount + 1 : 0);
-		if (isFinished && finishCount >= NUM_FINISH) {
-			return 0;
-		}
+	if (isFinished()) {
+    return 0;
 	}
 
 	this->error_sum += error;
@@ -68,10 +86,6 @@ int PID::getCurrSpeed() {
 		255 * this->base_vel
 	);
 
-	char debug[50];
- 	sprintf(debug, "%f %d %f %f %f %d %d", base_vel, error, error_sum, prev_error, error_diff, spd, sensorVal);
- 	Serial.println(debug);
-
 	this->prev_error = error;
-	return limit(spd, -255, 255);
+	return limit(spd, 0.25 * -255, 0.25 * 255);
 }
