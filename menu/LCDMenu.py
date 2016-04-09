@@ -34,7 +34,7 @@ def dLCD(but):
 	prevScreen = 0
 	if (dLCD.screen == 0): # 0 Select Run Robot
 		lcd.message('   Run Robot    \n<-            ->')
-		if (but == LCD.LEFT): dLCD.screen = 2
+		if (but == LCD.LEFT): dLCD.screen = 8
 		elif (but == LCD.RIGHT): dLCD.screen = 1
 		elif (but == LCD.DOWN): dLCD.screen = 3
 	elif (dLCD.screen == 1): # 1 Select Sensor Data
@@ -45,8 +45,12 @@ def dLCD(but):
 	elif (dLCD.screen == 2): # Power Off
         lcd.message('   Shut Down')
         if (but == LCD.LEFT): dLCD.screen = 1
-        elif (bu == LCD.RIGHT): dLCD.screen = 0
+        elif (but == LCD.RIGHT): dLCD.screen = 8
         elif (but == LCD.DOWN): os.system("poweroff")
+    elif (dLCD.screen == 8): #IP Address
+        lcd.message(' '+os.popen("hostname -I").read()+'<- IP Address ->')
+        if (but == LCD.LEFT): dLCD.screen = 2
+        elif (but == LCD.RIGHT): dLCD.screen = 0
 	elif (dLCD.screen == 3): # 3 Traverse Maze
 		lcd.message(' Traverse Maze  \n<-            ->')
 		if (but == LCD.UP): dLCD.screen = 0
