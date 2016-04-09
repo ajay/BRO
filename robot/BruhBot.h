@@ -100,6 +100,8 @@ class BruhBot
 		std::string mode = "STOP";
 		std::string pid_type = "STOP";
 		int pid_info = 0;
+		std::vector<int> position;
+		int orientation = 0;
 
 		/**
 		 * Flag from Arduino telling pi that the robot can move

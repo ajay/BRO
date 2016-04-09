@@ -6,9 +6,14 @@
 
 #include "cell.h"
 
+#define ULTRA_FRONT 0
+#define ULTRA_LEFT  2
+#define ULTRA_RIGHT  3
+
 using namespace std;
 
 #define SIZE 6
+#define threshold 5
 
 class Maze
 {
@@ -23,6 +28,10 @@ class Maze
 
 		std::vector<string> path_instructions;
 		std::vector<int> path;
+
+		stack <cell> neighbors;
+		stack <cell> used;
+
 
 		int getX(int last);
 		int getY(int last);

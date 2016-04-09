@@ -1,4 +1,4 @@
-#include "maze.h"
+#include "this->h"
 #include <vector>
 #include <algorithm>
 
@@ -490,6 +490,233 @@ void Maze::createPreviousBrownMaze()
 		maze[c].setWalls(north, south, west, east);
 	}
 }
+
+void Maze::map(BruhBot &bruh)
+{
+	int x = 0, y = 0;
+	cell *curr = this->_i(x,y);
+	cell *temp;
+	int visi = 1;
+	string nextMove = "STOP";
+
+
+	while(visi < SIZE*SIZE)
+	{
+		if(bruh->ultrasonic[ULTRA_FRONT] >= threshold)
+		{
+			if(bruh->orientation < 0)
+			{
+				bruh->orientation = bruh->orientation + 360;
+			}
+			else if(bruh->orientation >= 360)
+			{
+				bruh->orientation =  bruh->orientation - 360;
+			}
+
+			if(bruh->orientation == 90)
+			{
+				curr->north = this->_i(x, y++);
+				temp = curr->north;
+				this->_i(x, y++)->south = curr;
+			}
+			else if(bruh->orientation == 0)
+			{
+				curr->east = this->_i(x++, y);
+				temp = curr->east;
+				this->_i(x++, y)->west = curr;
+			}
+			else if(bruh->orientation == 270)
+			{
+				curr->south = this->_i(x, y--);
+				temp = curr->south;
+				this->_i(x, y--)->north = curr;
+			}
+			else if(bruh->orientation == 180)
+			{
+				curr->west = this->_i(x--, y);
+				temp = curr->west;
+				this->_i(x--, y)->east = curr;
+			}
+			if(temp.visited == 0)
+			{	
+				this->neighbors.push(temp);
+			}
+		}
+		//left ultra sensor
+		if(bruh->ultrasonic[ULTRA_LEFT] >= threshold)
+		{
+			if(bruh->orientation < 0)
+			{
+				bruh->orientation = bruh->orientation + 360;
+			}
+			else if(bruh->orientation >= 360)
+			{
+				bruh->orientation =  bruh->orientation - 360;
+			}
+
+			if(bruh->orientation == 0)
+			{
+				curr->north = this->_i(x, y++);
+				temp = curr->north;
+				this->_i(x, y++)->south = curr;
+			}
+			else if(bruh->orientation == 270)
+			{
+				curr->east = this->_i(x++, y);
+				temp = curr->east;
+				this->_i(x++, y)->west = curr;
+			}
+			else if(bruh->orientation == 180)
+			{
+				curr->south = this->_i(x, y--);
+				temp = curr->south;
+				this->_i(x, y--)->north = curr;
+			}
+			else if(bruh->orientation == 90)
+			{
+				curr->west = this->_i(x--, y);
+				temp = curr->west;
+				this->_i(x--, y)->east = curr;
+			}
+			if(temp.visited == 0)
+			{	
+				this->neighbors.push(temp);
+			}
+		}
+		//right ultra sensor
+		if(bruh->ultrasonic[ULTRA_RIGHT] >= threshold)
+		{
+			if(bruh->orientation < 0)
+			{
+				bruh->orientation = bruh->orientation + 360;
+			}
+			else if(bruh->orientation >= 360)
+			{
+				bruh->orientation =  bruh->orientation - 360;
+			}
+
+			if(bruh->orientation == 180)
+			{
+				curr->north = this->_i(x, y++);
+				temp = curr->north;
+				this->_i(x, y++)->south = curr;
+			}
+			else if(bruh->orientation == 90)
+			{
+				curr->east = this->_i(x++, y);
+				temp = curr->east;
+				this->_i(x++, y)->west = curr;
+			}
+			else if(bruh->orientation == 0)
+			{
+				curr->south = this->_i(x, y--);
+				temp = curr->south;
+				this->_i(x, y--)->north = curr;
+			}
+			else if(bruh->orientation == 270)
+			{
+				curr->west = this->_i(x--, y);
+				temp = curr->west;
+				this->_i(x--, y)->east = curr;
+			}
+			if(temp.visited == 0)
+			{	
+				this->neighbors.push(temp);
+			}
+		}
+		
+//move function seperate later!!
+		temp = this->neighbors.pop();
+
+		if(temp->south != NULL && curr->north == temp->south )
+		{
+			if(bruh->orientation == 0){
+				nextMove = "TURN_+90";
+			}
+			else if(bruh->orientation == 90){
+				nextMove = "FORWARD";
+			}
+			else if(bruh->orientation == 180){
+				nextMove = "TURN_-90";
+			}
+			else if(bruh->orientation == 270){
+				nextMove = "TURN_180";
+			}
+		}
+		else if (temp->west != NULL && curr->east == temp->west)
+		{
+			if(bruh->orientation == 0){
+				nextMove = "FORWARD";
+			}
+			else if(bruh->orientation == 90){
+				nextMove = "TURN_-90";
+			}
+			else if(bruh->orientation == 180){
+				nextMove = "TURN_180";
+			}
+			else if(bruh->orientation == 270){
+				nextMove = "TURN_+90";
+			}
+		} 
+		else if (temp->north != NULL && curr->south == temp->north)
+		{
+			if(bruh->orientation == 0){
+				nextMove = "TURN_-90";
+			}
+			else if(bruh->orientation == 90){
+				nextMove = "TURN_180";
+			}
+			else if(bruh->orientation == 180){
+				nextMove = "TURN_+90";
+			}
+			else if(bruh->orientation == 270){
+				nextMove = "FORWARD";
+			}
+		}
+		else if (temp->east !+ NULL && curr->west == temp->east)
+		{
+			if(bruh->orientation == 0){
+				nextMove = "TURN_180";
+			}
+			else if(bruh->orientation == 90){
+				nextMove = "TURN_+90";
+			}
+			else if(bruh->orientation == 180){
+				nextMove = "FORWARD";
+			}
+			else if(bruh->orientation == 270){
+				nextMove = "TURN_-90";
+			}
+		}
+			
+
+
+			bruh->move(nextMove);
+			this->used.push(curr);
+			curr = temp; 
+			curr.visited = 1;
+			if(curr.visited = 0){
+				visi++;
+			}
+			else if(curr.visited = 1){
+				while(curr->north != NULL && curr->north.visited = 1  )
+				{
+
+				}
+			}
+			if(bruh->ultrasonic[ULTRA_FRONT] < threshold && bruh->ultrasonic[ULTRA_RIGHT] < threshold && bruh->ultrasonic[ULTRA_LEFT]){
+				//traverse back
+				while(1)
+				{
+
+				}
+			}
+
+
+			//update cells for visited
+	}
+}
+
 
 // Create a random maze
 void Maze::createMaze()
