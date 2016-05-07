@@ -504,6 +504,7 @@ void Maze::map(BruhBot *bruh)
 	{
 		if(bruh->ultrasonic[ULTRA_FRONT] >= threshold)
 		{
+			printf("removing front wall at (%d, %d)\n", x, y);
 			if(bruh->orientation < 0)
 			{
 				bruh->orientation = bruh->orientation + 360;
@@ -515,27 +516,43 @@ void Maze::map(BruhBot *bruh)
 
 			if(bruh->orientation == 90)
 			{
-				curr->setNorth(&this->maze[_i(x, y++)]);
-				temp = curr->getNorth();
-				this->maze[_i(x, y++)].setSouth(curr);
+				if (y + 1 < size)
+				{
+					y = y + 1;
+					curr->setNorth(&this->maze[_i(x, y)]);
+					temp = curr->getNorth();
+					this->maze[_i(x, y)].setSouth(curr);
+				}
 			}
 			else if(bruh->orientation == 0)
 			{
-				curr->setEast(&this->maze[_i(x++, y)]);
-				temp = curr->getEast();
-				this->maze[_i(x++, y)].setWest(curr);
+				if (x + 1 < size)
+				{
+					x++;
+					curr->setEast(&this->maze[_i(x, y)]);
+					temp = curr->getEast();
+					this->maze[_i(x, y)].setWest(curr);
+				}
 			}
 			else if(bruh->orientation == 270)
 			{
-				curr->setSouth(&this->maze[_i(x, y--)]);
-				temp = curr->getSouth();
-				this->maze[_i(x, y--)].setNorth(curr);
+				if (y - 1 > 0)
+				{
+					y--;
+					curr->setSouth(&this->maze[_i(x, y)]);
+					temp = curr->getSouth();
+					this->maze[_i(x, y)].setNorth(curr);
+				}
 			}
 			else if(bruh->orientation == 180)
 			{
-				curr->setWest(&this->maze[_i(x--, y)]);
-				temp = curr->getWest();
-				this->maze[_i(x--, y)].setEast(curr);
+				if (x - 1 > 0)
+				{
+					x--;
+					curr->setWest(&this->maze[_i(x, y)]);
+					temp = curr->getWest();
+					this->maze[_i(x, y)].setEast(curr);
+				}
 			}
 			if(temp->getVisited() == 0)
 			{
@@ -546,6 +563,7 @@ void Maze::map(BruhBot *bruh)
 		//left ultra sensor
 		if(bruh->ultrasonic[ULTRA_LEFT] >= threshold)
 		{
+			printf("removing left wall at (%d, %d)\n", x, y);
 			if(bruh->orientation < 0)
 			{
 				bruh->orientation = bruh->orientation + 360;
@@ -557,27 +575,43 @@ void Maze::map(BruhBot *bruh)
 
 			if(bruh->orientation == 0)
 			{
-				curr->setNorth(&this->maze[_i(x, y++)]);
-				temp = curr->getNorth();
-				this->maze[_i(x, y++)].setSouth(curr);
+				if (y + 1 < size)
+				{
+					y++;
+					curr->setNorth(&this->maze[_i(x, y)]);
+					temp = curr->getNorth();
+					this->maze[_i(x, y)].setSouth(curr);
+				}
 			}
 			else if(bruh->orientation == 270)
 			{
-				curr->setEast(&this->maze[_i(x++, y)]);
-				temp = curr->getEast();
-				this->maze[_i(x++, y)].setWest(curr);
+				if (x + 1 < size)
+				{
+					x++;
+					curr->setEast(&this->maze[_i(x, y)]);
+					temp = curr->getEast();
+					this->maze[_i(x, y)].setWest(curr);
+				}
 			}
 			else if(bruh->orientation == 180)
 			{
-				curr->setSouth(&this->maze[_i(x, y--)]);
-				temp = curr->getSouth();
-				this->maze[_i(x, y--)].setNorth(curr);
+				if (y - 1 > 0)
+				{
+					y--;
+					curr->setSouth(&this->maze[_i(x, y)]);
+					temp = curr->getSouth();
+					this->maze[_i(x, y)].setNorth(curr);
+				}
 			}
 			else if(bruh->orientation == 90)
 			{
-				curr->setWest(&this->maze[_i(x--, y)]);
-				temp = curr->getWest();
-				this->maze[_i(x--, y)].setEast(curr);
+				if (x - 1 > 0)
+				{
+					x--;
+					curr->setWest(&this->maze[_i(x, y)]);
+					temp = curr->getWest();
+					this->maze[_i(x, y)].setEast(curr);
+				}
 			}
 			if(temp->getVisited() == 0)
 			{
@@ -588,6 +622,7 @@ void Maze::map(BruhBot *bruh)
 		//right ultra sensor
 		if(bruh->ultrasonic[ULTRA_RIGHT] >= threshold)
 		{
+			printf("removing right wall at (%d, %d)\n", x, y);
 			if(bruh->orientation < 0)
 			{
 				bruh->orientation = bruh->orientation + 360;
@@ -599,27 +634,43 @@ void Maze::map(BruhBot *bruh)
 
 			if(bruh->orientation == 180)
 			{
-				curr->setNorth(&this->maze[_i(x, y++)]);
-				temp = curr->getNorth();
-				this->maze[_i(x, y++)].setSouth(curr);
+				if (y + 1 < size)
+				{
+					y++;
+					curr->setNorth(&this->maze[_i(x, y)]);
+					temp = curr->getNorth();
+					this->maze[_i(x, y)].setSouth(curr);
+				}
 			}
 			else if(bruh->orientation == 90)
 			{
-				curr->setEast(&this->maze[_i(x++, y)]);
-				temp = curr->getEast();
-				this->maze[_i(x++, y)].setWest(curr);
+				if (x + 1 < size)
+				{
+					x++;
+					curr->setEast(&this->maze[_i(x, y)]);
+					temp = curr->getEast();
+					this->maze[_i(x, y)].setWest(curr);
+				}
 			}
 			else if(bruh->orientation == 0)
 			{
-				curr->setSouth(&this->maze[_i(x, y--)]);
-				temp = curr->getSouth();
-				this->maze[_i(x, y--)].setNorth(curr);
+				if (y - 1 > 0)
+				{
+					y--;
+					curr->setSouth(&this->maze[_i(x, y)]);
+					temp = curr->getSouth();
+					this->maze[_i(x, y)].setNorth(curr);
+				}
 			}
 			else if(bruh->orientation == 270)
 			{
-				curr->setWest(&this->maze[_i(x--, y)]);
-				temp = curr->getWest();
-				this->maze[_i(x--, y)].setEast(curr);
+				if (x - 1 > 0)
+				{
+					x--;
+					curr->setWest(&this->maze[_i(x, y)]);
+					temp = curr->getWest();
+					this->maze[_i(x, y)].setEast(curr);
+				}
 			}
 			if(temp->getVisited() == 0)
 			{
@@ -632,16 +683,28 @@ void Maze::map(BruhBot *bruh)
 		this->used.push(curr);
 
 		//Determine which cell to move to next
-		if(this->neighbors.top()->getParent() == this->used.top())
+		if (this->neighbors.size() != 0)
 		{
-			temp = this->neighbors.top();
-			this->neighbors.pop();
+			if(this->neighbors.top()->getParent() == this->used.top())
+			{
+				temp = this->neighbors.top();
+				this->neighbors.pop();
+			}
+			else
+			{
+				temp = this->used.top();
+				this->used.pop();
+			}
 		}
 		else
 		{
-			temp = this->used.top();
-			this->used.pop();
+			if(this->neighbors.size() != 0)
+			{
+				temp = this->neighbors.top();
+				this->neighbors.pop();
+			}
 		}
+
 
 
 		if(temp->getSouth() != NULL && curr->getNorth() == temp->getSouth() )
@@ -650,7 +713,8 @@ void Maze::map(BruhBot *bruh)
 				nextMove = "TURN_+90";
 			}
 			else if(bruh->orientation == 90){
-				nextMove = "FORWARD";
+				printf("Hello\n");
+				nextMove = "STRAIGHT";
 			}
 			else if(bruh->orientation == 180){
 				nextMove = "TURN_-90";
@@ -662,7 +726,7 @@ void Maze::map(BruhBot *bruh)
 		else if (temp->getWest() != NULL && curr->getEast() == temp->getWest())
 		{
 			if(bruh->orientation == 0){
-				nextMove = "FORWARD";
+				nextMove = "STRAIGHT";
 			}
 			else if(bruh->orientation == 90){
 				nextMove = "TURN_-90";
@@ -686,7 +750,7 @@ void Maze::map(BruhBot *bruh)
 				nextMove = "TURN_+90";
 			}
 			else if(bruh->orientation == 270){
-				nextMove = "FORWARD";
+				nextMove = "STRAIGHT";
 			}
 		}
 		else if (temp->getEast() != NULL && curr->getWest() == temp->getEast())
@@ -698,7 +762,7 @@ void Maze::map(BruhBot *bruh)
 				nextMove = "TURN_+90";
 			}
 			else if(bruh->orientation == 180){
-				nextMove = "FORWARD";
+				nextMove = "STRAIGHT";
 			}
 			else if(bruh->orientation == 270){
 				nextMove = "TURN_-90";

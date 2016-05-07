@@ -7,6 +7,8 @@
 
 #include "serial.h"
 
+#include <unistd.h>
+
 class BruhBot
 {
 	public:

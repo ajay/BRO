@@ -4,6 +4,7 @@
 #include <termios.h>
 #include <iostream>
 #include <string>
+#include <unistd.h>
 
 #include "BruhBot.h"
 
@@ -25,6 +26,21 @@ static double limitf(double x, double min, double max)
 
 void BruhBot::move(std::string action)
 {
+	pid_type = action;
+
+	usleep(3000000);
+
+	this->reset_encoders();
+
+	if (pid_type != "STRAIGHT")
+	{
+		pid_type = "STRAIGHT";
+		usleep(3000000);
+		this->reset_encoders();
+
+	}else{
+		pid_type = "ADVANCE";
+	}
 
 }
 
@@ -294,7 +310,7 @@ void BruhBot::threadSend(std::vector<double> motion)
 
 				runMode = this->reset_enc;
 				if (runMode == 0) {
-					if (!this->mode.compare(0, 3, "PID")) {
+					if (!this->mode.compare(0, 3, "PID") || (this->mode == "AUTO")) {
 						if (!this->pid_type.compare(0, 8, "STRAIGHT")) {
 							runMode = 2;
 						} else if (!this->pid_type.compare(0, 8, "TURN_+90")) {

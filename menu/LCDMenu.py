@@ -55,7 +55,7 @@ def dLCD(but):
 		lcd.message(' Traverse Maze  \n<-            ->')
 		if (but == LCD.UP): dLCD.screen = 0
 		elif (but == LCD.DOWN):
-			dLCD.p = subprocess.Popen(pathToProcess + "./bruh",shell=True);
+			dLCD.p = subprocess.Popen(pathToProcess + "./bruh q124d",shell=True);
 			dLCD.screen = 7;
 		elif (but == LCD.LEFT): dLCD.screen = 4
 		elif (but == LCD.RIGHT): dLCD.screen = 4

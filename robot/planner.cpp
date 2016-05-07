@@ -21,6 +21,7 @@ static int stopsig;
 
 void auton()
 {
+	// usleep(2000000);
 	while (1)
 	{
 		while (bruh.mode != "AUTO")
@@ -28,39 +29,45 @@ void auton()
 			usleep(100000); // 100ms
 		}
 
-		for (unsigned int i = 0; i < maze->path.size(); i++)
-		{
-			if (bruh.mode != "AUTO")
-			{
-				cout << bruh.mode << "\n";
-				break;
-			}
 
-			usleep(500000); // 0.5 s
-			bruh.pid_type = "STOP";
-			printf("---State %d of %d---\n", i, (int)maze->path.size()-1);
-			printf("Target: (%2d, %2d)\n", maze->getX(maze->path[maze->path.size()-1]), maze->getY(maze->path[maze->path.size()-1]));
-			printf("Current location: (%2d, %2d)\n", maze->getX(maze->path[i]), maze->getY(maze->path[i]));
-			printf("Current action: %s\n", maze->path_instructions[i].c_str());
+		printf("starting mapping\n");
 
-			if (maze->path_instructions[i] == "GOAL")
-			{
-				bruh.mode = "STOP";
-				break;
-			}
-			else
-			{
-				bruh.reset_encoders();
-				bruh.mode = "PID";
-				bruh.pid_type = maze->path_instructions[i];
-				/*if ((maze->path_instructions[i] == "TURN_-90") or (maze->path_instructions[i] == "TURN_+90"))
-				{
-					usleep(500000); // 500ms
-					bruh.reset_encoders();
-					usleep(500000); // 500ms
-					bruh.pid_type = "STRAIGHT";
-				}*/
-			}
+		maze->map(&bruh);
+		// for (unsigned int i = 0; i < maze->path.size(); i++)
+		// {
+		// 	// if (bruh.mode != "AUTO")
+		// 	// {
+		// 	// 	cout << bruh.mode << "\n";
+		// 	// 	break;
+		// 	// }
+
+		// 	usleep(500000); // 0.5 s
+		// 	bruh.pid_type = "STOP";
+		// 	// printf("---State %d of %d---\n", i, (int)maze->path.size()-1);
+		// 	// printf("Target: (%2d, %2d)\n", maze->getX(maze->path[maze->path.size()-1]), maze->getY(maze->path[maze->path.size()-1]));
+		// 	// printf("Current location: (%2d, %2d)\n", maze->getX(maze->path[i]), maze->getY(maze->path[i]));
+		// 	// printf("Current action: %s\n", maze->path_instructions[i].c_str());
+
+		// 	if (maze->path_instructions[i] == "GOAL")
+		// 	{
+		// 		bruh.mode = "STOP";
+		// 		break;
+		// 	}
+		// 	else
+		// 	{
+		// 		bruh.reset_encoders();
+		// 		bruh.mode = "PID";
+		// 		// printf("Starting pid\n");
+
+		// 		bruh.pid_type = maze->path_instructions[i];
+		// 		/*if ((maze->path_instructions[i] == "TURN_-90") or (maze->path_instructions[i] == "TURN_+90"))
+		// 		{
+		// 			usleep(500000); // 500ms
+		// 			bruh.reset_encoders();
+		// 			usleep(500000); // 500ms
+		// 			bruh.pid_type = "STRAIGHT";
+		// 		}*/
+		// 	}
 
 			while (bruh.pid_type != "ADVANCE")
 			{
@@ -69,7 +76,7 @@ void auton()
 			}
 
 			bruh.mode = "AUTO";
-		}
+		// }
 	}
 }
 
@@ -122,6 +129,8 @@ void print_SDL(std::ostringstream& str, int size, int x, int y)
 
 int main(int argc, char *argv[])
 {
+	argv[1] = "fdfs";
+
 	bruh.startStop = false;
 	signal(SIGINT, stop);
 	bool quit = false;
@@ -185,7 +194,7 @@ int main(int argc, char *argv[])
 
 		if 		(keystates[SDL_SCANCODE_R]) 												{ bruh.reset_encoders(); }
 		else if (keystates[SDL_SCANCODE_U])													{ bruh.mode = "DRIVE"; }
-		else if (keystates[SDL_SCANCODE_I])													{ bruh.mode = "AUTO"; }
+		else if (keystates[SDL_SCANCODE_I] || argv[1] != NULL)								{ bruh.mode = "AUTO"; }
 		else if (keystates[SDL_SCANCODE_O])													{ bruh.mode = "PID"; }
 		else if (keystates[SDL_SCANCODE_P])													{ bruh.mode = "STOP"; }
 
